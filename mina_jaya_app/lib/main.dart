@@ -64,7 +64,7 @@ class _MainPageState extends State<MainPage> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.set_meal_outlined),
-            label: 'Pakan',
+            label: 'Panen',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
