@@ -2,39 +2,27 @@
 
 import 'package:flutter/material.dart';
 
-class HomePage extends StatefulWidget {
+// 1. Ubah dari StatefulWidget menjadi StatelessWidget
+class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
-  @override
-  State<HomePage> createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> {
-  int _selectedIndex = 2; // Home
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
+  // 2. Hapus semua state (_selectedIndex dan _onItemTapped)
+  //    karena sudah diurus oleh main.dart
 
   @override
   Widget build(BuildContext context) {
+    // 3. Scaffold-nya BOLEH tetap ada (untuk background & layout)
     return Scaffold(
-      // 1. Background diubah jadi PUTIH
-      backgroundColor: const Color.fromARGB(255, 230, 230, 230), // <-- DIUBAH
-      // 3. Body Utama
+      backgroundColor: const Color.fromARGB(255, 230, 230, 230),
       body: SingleChildScrollView(
-        // Kita HAPUS padding utama di sini
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // --- GAMBAR BANNER (FULL-WIDTH) ---
-            // Widget ini sekarang TIDAK dibungkus Padding
             Image.asset(
               'assets/tambak_page.jpeg',
               width: double.infinity,
-              height: 200, // Sedikit lebih tinggi agar pas
+              height: 200,
               fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) {
                 return Container(
@@ -47,7 +35,6 @@ class _HomePageState extends State<HomePage> {
             ),
 
             // --- KONTEN LAIN DENGAN PADDING ---
-            // Semua konten lain kita bungkus dengan Padding
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
@@ -56,7 +43,7 @@ class _HomePageState extends State<HomePage> {
                   const Text(
                     'STATISTIK KOLAM',
                     style: TextStyle(
-                      color: Color.fromARGB(255, 0, 0, 0), // <-- DIUBAH
+                      color: Color.fromARGB(255, 0, 0, 0),
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
@@ -135,7 +122,7 @@ class _HomePageState extends State<HomePage> {
                       style: TextStyle(
                         color: Colors.grey[500],
                         fontSize: 12,
-                      ), // <-- DIUBAH
+                      ),
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -146,39 +133,14 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
 
-      // 4. Bottom Navigation Bar
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.query_stats),
-            label: 'Statistik',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.set_meal_outlined),
-            label: 'Pakan',
-          ),
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.inventory_2_outlined),
-            label: 'Stok',
-          ),
-        ],
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-        backgroundColor: const Color.fromARGB(255, 71, 131, 216),
-        selectedItemColor: const Color.fromARGB(255, 157, 240, 255),
-        unselectedItemColor: const Color.fromARGB(255, 255, 255, 255),
-        type: BottomNavigationBarType.fixed,
-        showUnselectedLabels: false,
-        showSelectedLabels: true,
-        elevation: 8.0, // <-- DITAMBAHKAN (untuk bayangan)
-      ),
+      // 4. HAPUS SEMUA 'bottomNavigationBar' DARI FILE INI
+      // (Bagian 'bottomNavigationBar' yang tadinya ada di sini sudah dihapus)
     );
   }
 
   // --- WIDGET BANTUAN ---
+  // (Pindahkan semua widget bantuan ke sini, di dalam class HomePage)
 
-  // (Tidak ada perubahan di _buildStatCard)
   Widget _buildStatCard({
     required Widget iconWidget,
     required String title,
@@ -215,20 +177,18 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // Widget untuk kartu "Jenis Ikan"
   Widget _buildJenisIkanCard() {
     return Container(
       padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
-        color: Colors.white, // Tetap putih
+        color: Colors.white,
         borderRadius: BorderRadius.circular(12.0),
-        // <-- DITAMBAHKAN BoxShadow
         boxShadow: [
           BoxShadow(
             color: Colors.grey.withOpacity(0.2),
             spreadRadius: 1,
             blurRadius: 5,
-            offset: const Offset(0, 3), // Posisi bayangan
+            offset: const Offset(0, 3),
           ),
         ],
       ),
@@ -280,7 +240,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // (Tidak ada perubahan di _buildLegendItem)
   Widget _buildLegendItem(Color color, String title, String percentage) {
     return Row(
       children: [
@@ -297,21 +256,19 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // Widget untuk kartu "Status Sensor"
   Widget _buildStatusSensorCard() {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
-        color: Colors.white, // Tetap putih
+        color: Colors.white,
         borderRadius: BorderRadius.circular(12.0),
-        // <-- DITAMBAHKAN BoxShadow
         boxShadow: [
           BoxShadow(
             color: Colors.grey.withOpacity(0.2),
             spreadRadius: 1,
             blurRadius: 5,
-            offset: const Offset(0, 3), // Posisi bayangan
+            offset: const Offset(0, 3),
           ),
         ],
       ),
