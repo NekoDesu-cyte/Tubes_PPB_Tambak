@@ -8,7 +8,7 @@ class KeuanganPage extends StatelessWidget {
     // Kita gunakan Scaffold lagi, tapi tanpa AppBar
     // karena desainnya menyatu dengan gambar atas
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Color.fromARGB(255, 230, 230, 230),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -16,7 +16,7 @@ class KeuanganPage extends StatelessWidget {
             // --- GAMBAR BANNER (FULL-WIDTH) ---
             // Menggunakan gambar yang sama dengan di Home
             Image.asset(
-              'assets/images/tambak_banner.jpg',
+              'assets/tambak_page.jpeg',
               width: double.infinity,
               height: 200,
               fit: BoxFit.cover,
@@ -137,12 +137,15 @@ class KeuanganPage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          Text(
-            amount,
-            style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: amountColor, // Warna dinamis
+          Align(
+            alignment: Alignment.centerRight,
+            child: Text(
+              amount,
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: amountColor, // Warna dinamis
+              ),
             ),
           ),
           const SizedBox(height: 12),

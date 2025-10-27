@@ -78,9 +78,9 @@ class _MainPageState extends State<MainPage> {
         ],
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
-        backgroundColor: Colors.white,
-        selectedItemColor: Colors.blueAccent,
-        unselectedItemColor: Colors.grey[600],
+        backgroundColor: const Color.fromRGBO(56, 137, 213, 1),
+        selectedItemColor: const Color.fromARGB(255, 130, 210, 244),
+        unselectedItemColor: const Color.fromARGB(255, 255, 255, 255),
         type: BottomNavigationBarType.fixed,
         showUnselectedLabels: true, // Tampilkan semua label
         showSelectedLabels: true,
