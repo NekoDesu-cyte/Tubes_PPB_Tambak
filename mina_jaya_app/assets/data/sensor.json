@@ -1,0 +1,40 @@
+{
+  "sensor_list": [
+    {
+      "nama": "Sensor Suhu 1",
+      "lokasi": "Kolam A",
+      "status": "Aktif",
+      "nilai": "29.5 °C"
+    },
+    {
+      "nama": "Sensor pH 1",
+      "lokasi": "Kolam A",
+      "status": "Aktif",
+      "nilai": "7.2"
+    },
+    {
+      "nama": "Sensor Oksigen 1",
+      "lokasi": "Kolam A",
+      "status": "Aktif",
+      "nilai": "5.4 mg/L"
+    },
+    {
+      "nama": "Sensor Suhu 2",
+      "lokasi": "Kolam B",
+      "status": "Tidak Aktif",
+      "nilai": "-"
+    },
+    {
+      "nama": "Sensor pH 2",
+      "lokasi": "Kolam B",
+      "status": "Aktif",
+      "nilai": "7.0"
+    },
+    {
+      "nama": "Sensor Oksigen 2",
+      "lokasi": "Kolam B",
+      "status": "Aktif",
+      "nilai": "5.2 mg/L"
+    }
+  ]
+}

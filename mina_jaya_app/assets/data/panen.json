@@ -1,0 +1,29 @@
+{
+  "total_panen": {
+    "jumlah": 920.228,
+    "satuan": "kg",
+    "periode": "September 2025"
+  },
+  "bibit_ikan": {
+    "jumlah": 9200,
+    "satuan": "ekor",
+    "periode": "12 September 2025"
+  },
+  "pokdakan": [
+    {
+      "batch": "Sept 2025",
+      "nama_barang": "Pancingan Si Mbah",
+      "total": "1120 Kg"
+    },
+    {
+      "batch": "Sept 2025",
+      "nama_barang": "Pancingan Si Mbah",
+      "total": "1120 Kg"
+    },
+    {
+      "batch": "Sept 2025",
+      "nama_barang": "Pancingan Si Mbah",
+      "total": "1120 Kg"
+    }
+  ]
+}

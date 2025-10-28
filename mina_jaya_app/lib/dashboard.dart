@@ -1,6 +1,8 @@
 // lib/home_page.dart
 
 import 'package:flutter/material.dart';
+import 'statistik.dart'; 
+import 'detail_sensor.dart';
 
 // 1. Ubah dari StatefulWidget menjadi StatelessWidget
 class HomePage extends StatelessWidget {
@@ -41,7 +43,7 @@ class HomePage extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'STATISTIK KOLAM',
+                    'DASHBOARD KOLAM',
                     style: TextStyle(
                       color: Color.fromARGB(255, 0, 0, 0),
                       fontSize: 18,
@@ -112,7 +114,7 @@ class HomePage extends StatelessWidget {
                   const SizedBox(height: 16),
 
                   // --- KARTU STATUS SENSOR ---
-                  _buildStatusSensorCard(),
+                  _buildStatusSensorCard(context),
                   const SizedBox(height: 16),
 
                   // --- FOOTER TEXT ---
@@ -256,7 +258,7 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusSensorCard() {
+  Widget _buildStatusSensorCard(BuildContext context) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16.0),
@@ -287,7 +289,14 @@ class HomePage extends StatelessWidget {
           _buildLegendItem(Colors.grey, 'Sensor Inaktif', '0'),
           const Divider(height: 24),
           TextButton(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const DetailSensorPage(),
+                ),
+              );
+            },
             child: const Text(
               'Periksa Selengkapnya >',
               style: TextStyle(color: Colors.blueAccent),
