@@ -5,16 +5,13 @@ class KeuanganPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Kita gunakan Scaffold lagi, tapi tanpa AppBar
-    // karena desainnya menyatu dengan gambar atas
     return Scaffold(
       backgroundColor: Color.fromARGB(255, 230, 230, 230),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // --- GAMBAR BANNER (FULL-WIDTH) ---
-            // Menggunakan gambar yang sama dengan di Home
+            // Banner
             Image.asset(
               'assets/tambak_page.jpeg',
               width: double.infinity,
@@ -36,58 +33,54 @@ class KeuanganPage extends StatelessWidget {
               },
             ),
 
-            // --- KONTEN UTAMA ---
-            // Kita bungkus semua konten di bawah gambar dengan Padding
+            // Main Content
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Judul "Keuangan"
                   const Text(
                     'Keuangan',
                     style: TextStyle(
-                      color: Color(0xFF005A9C), // Biru tua
+                      color: Color(0xFF005A9C), 
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 16),
 
-                  // --- KARTU DANA TAMBAK ---
+                  // Card Content
                   _buildDanaCard(
                     title: 'Dana Tambak',
                     amount: 'Rp. 12.000.000',
                     lastTransaction: 'Transaksi Terakhir pada 12/09/2025',
-                    amountColor: Colors.black, // Warna hitam untuk dana utama
+                    amountColor: Colors.black, 
                   ),
                   const SizedBox(height: 16),
 
-                  // --- KARTU TRANSAKSI TERAKHIR ---
                   _buildDanaCard(
                     title: 'Transaksi Terakhir',
                     amount: 'Rp. 920.000',
                     lastTransaction: 'Transaksi Terakhir pada 12/09/2025',
-                    amountColor: Colors.red, // Warna merah sesuai desain
+                    amountColor: Colors.red, 
                   ),
                   const SizedBox(height: 24),
 
-                  // --- JUDUL TABEL TRANSAKSI ---
                   const Text(
                     'Transaksi Keuangan Tambak',
                     style: TextStyle(
-                      color: Color(0xFF005A9C), // Biru tua
+                      color: Color(0xFF005A9C), 
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 16),
 
-                  // --- TABEL TRANSAKSI ---
+                  
                   _buildTransaksiTable(),
 
                   const SizedBox(height: 32),
-                  // --- FOOTER TEXT ---
+                  
                   const Center(
                     child: Text(
                       'Tambak Ikan Mina Jaya ©2025',
@@ -103,7 +96,6 @@ class KeuanganPage extends StatelessWidget {
     );
   }
 
-  // Widget bantuan untuk kartu Dana
   Widget _buildDanaCard({
     required String title,
     required String amount,
@@ -144,7 +136,7 @@ class KeuanganPage extends StatelessWidget {
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
-                color: amountColor, // Warna dinamis
+                color: amountColor, 
               ),
             ),
           ),
@@ -158,9 +150,8 @@ class KeuanganPage extends StatelessWidget {
     );
   }
 
-  // Widget bantuan untuk membangun tabel
   Widget _buildTransaksiTable() {
-    // Data dummy untuk tabel
+    // Data dummy nya disini
     final List<Map<String, String>> transactions = [
       {
         "Nomor": "T928B",
@@ -213,20 +204,20 @@ class KeuanganPage extends StatelessWidget {
           ),
         ],
       ),
-      // Kita gunakan widget Table untuk layout yang rapi
+      
       child: Table(
-        // Lebar kolom
+
         columnWidths: const {
-          0: FlexColumnWidth(1.5), // Nomor
-          1: FlexColumnWidth(3), // Nama Transaksi
-          2: FlexColumnWidth(2), // Tanggal
-          3: FlexColumnWidth(1.5), // Tipe
+          0: FlexColumnWidth(1.5), 
+          1: FlexColumnWidth(3), 
+          2: FlexColumnWidth(2), 
+          3: FlexColumnWidth(1.5), 
         },
         children: [
-          // --- BARIS HEADER ---
+          
           TableRow(
             decoration: const BoxDecoration(
-              color: Colors.white, // Latar belakang header
+              color: Colors.white, 
               borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(8.0),
                 topRight: Radius.circular(8.0),
@@ -240,12 +231,9 @@ class KeuanganPage extends StatelessWidget {
             ],
           ),
 
-          // --- BARIS DATA ---
-          // Kita loop data dummy
           for (var tx in transactions)
             TableRow(
               decoration: BoxDecoration(
-                // Warna belang-seling (Zebra)
                 color: transactions.indexOf(tx) % 2 == 0
                     ? Colors.grey[50]
                     : Colors.white,
@@ -262,7 +250,6 @@ class KeuanganPage extends StatelessWidget {
     );
   }
 
-  // Helper untuk sel header tabel
   static TableCell _buildHeaderCell(String text) {
     return TableCell(
       child: Padding(
@@ -279,7 +266,6 @@ class KeuanganPage extends StatelessWidget {
     );
   }
 
-  // Helper untuk sel data tabel
   static TableCell _buildDataCell(String text) {
     return TableCell(
       verticalAlignment: TableCellVerticalAlignment.middle,

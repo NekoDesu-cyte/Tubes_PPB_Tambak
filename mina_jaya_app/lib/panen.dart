@@ -6,7 +6,8 @@ class PanenPage extends StatelessWidget {
   const PanenPage({super.key});
 
   Future<Map<String, dynamic>> loadPanenData() async {
-    final String jsonString = await rootBundle.loadString('assets/data/panen.json');
+    final String jsonString =
+        await rootBundle.loadString('assets/data/panen.json');
     return json.decode(jsonString);
   }
 
@@ -65,14 +66,16 @@ class PanenPage extends StatelessWidget {
                         title: 'Total Hasil Panen Ikan',
                         value: totalPanen['jumlah'].toString(),
                         unit: totalPanen['satuan'],
-                        subtitle: 'Data Terbaru Bulan : ${totalPanen['periode']}',
+                        subtitle:
+                            'Data Terbaru Bulan : ${totalPanen['periode']}',
                       ),
                       const SizedBox(height: 16),
                       _buildPanenCard(
                         title: 'Data Bibit Ikan',
                         value: bibitIkan['jumlah'].toString(),
                         unit: bibitIkan['satuan'],
-                        subtitle: 'Data Terbaru Bulan : ${bibitIkan['periode']}',
+                        subtitle:
+                            'Data Terbaru Bulan : ${bibitIkan['periode']}',
                       ),
                       const SizedBox(height: 24),
                       const Text(
@@ -85,6 +88,12 @@ class PanenPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 16),
                       _buildPanenTable(pokdakan),
+
+                      // --- BAGIAN BARU DITAMBAHKAN DI SINI ---
+                      const SizedBox(height: 24),
+                      _buildDataKolamSection(), // <-- WIDGET BARU
+                      // ------------------------------------
+
                       const SizedBox(height: 32),
                       const Center(
                         child: Text(
@@ -100,6 +109,148 @@ class PanenPage extends StatelessWidget {
           );
         },
       ),
+    );
+  }
+
+  // --- WIDGET DATA KOLAM ---
+
+  Widget _buildDataKolamSection() {
+    final List<Map<String, dynamic>> dataKolam = [
+      {
+        "nama": "KOLAM 1",
+        "jenis_ikan": "Mujair",
+        "status_pakan": "Diberikan",
+        "suhu_air": "28°C",
+        "oksigen_air": "28°C",
+        "ph_air": "6.13",
+        "pemilik": "Sujarwo"
+      },
+      {
+        "nama": "KOLAM 2",
+        "jenis_ikan": "Mujair",
+        "status_pakan": "Diberikan",
+        "suhu_air": "28°C",
+        "oksigen_air": "28°C",
+        "ph_air": "6.13",
+        "pemilik": "Sujarwo"
+      },
+      {
+        "nama": "KOLAM 3",
+        "jenis_ikan": "Mujair",
+        "status_pakan": "Diberikan",
+        "suhu_air": "28°C",
+        "oksigen_air": "28°C",
+        "ph_air": "6.13",
+        "pemilik": "Sujarwo"
+      },
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Judul
+        const Text(
+          'Data Kolam',
+          style: TextStyle(
+            color: Color(0xFF005A9C),
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 16),
+        // list kartu-kartu
+        ...dataKolam.map((kolam) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 16.0),
+            child: _buildKolamCard(kolam),
+          );
+        }).toList(),
+      ],
+    );
+  }
+
+  // Card kolamnya
+  Widget _buildKolamCard(Map<String, dynamic> kolamData) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20.0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12.0),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.2),
+            spreadRadius: 1,
+            blurRadius: 5,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            kolamData['nama'], 
+            style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildKolamInfoItem(
+                        'Jenis Ikan', kolamData['jenis_ikan']),
+                    const SizedBox(height: 12),
+                    _buildKolamInfoItem('Suhu Air', kolamData['suhu_air']),
+                    const SizedBox(height: 12),
+                    _buildKolamInfoItem('PH Air', kolamData['ph_air']),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 16), 
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildKolamInfoItem(
+                        'Status Pakan', kolamData['status_pakan']),
+                    const SizedBox(height: 12),
+                    _buildKolamInfoItem(
+                        'Oksigen Air', kolamData['oksigen_air']),
+                    const SizedBox(height: 12),
+                    _buildKolamInfoItem('Pemilik Kolam', kolamData['pemilik']),
+                  ],
+                ),
+              ),
+            ],
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _buildKolamInfoItem(String label, String value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(fontSize: 14, color: Colors.black54),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87),
+        ),
+      ],
     );
   }
 
@@ -129,7 +280,9 @@ class PanenPage extends StatelessWidget {
         children: [
           Text(title,
               style: const TextStyle(
-                  fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87)),
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87)),
           const SizedBox(height: 8),
           Align(
             alignment: Alignment.centerRight,
@@ -138,7 +291,9 @@ class PanenPage extends StatelessWidget {
                 TextSpan(
                   text: value,
                   style: const TextStyle(
-                      fontSize: 32, fontWeight: FontWeight.bold, color: Colors.black),
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black),
                 ),
                 TextSpan(
                   text: ' $unit',
@@ -148,7 +303,8 @@ class PanenPage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          Text(subtitle, style: const TextStyle(fontSize: 14, color: Colors.grey)),
+          Text(subtitle,
+              style: const TextStyle(fontSize: 14, color: Colors.grey)),
         ],
       ),
     );
@@ -186,7 +342,8 @@ class PanenPage extends StatelessWidget {
           for (var row in data)
             TableRow(
               decoration: BoxDecoration(
-                color: data.indexOf(row) % 2 == 0 ? Colors.grey[50] : Colors.white,
+                color:
+                    data.indexOf(row) % 2 == 0 ? Colors.grey[50] : Colors.white,
               ),
               children: [
                 _buildDataCell(row['batch'].toString()),

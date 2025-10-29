@@ -25,28 +25,19 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  // Variabel state untuk menyimpan status checkbox
   bool _rememberMe = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // 1. Background utama diubah menjadi putih
       backgroundColor: Colors.white,
-      // 2. SafeArea agar konten tidak mentok di status bar (atas)
       body: SafeArea(
-        // 3. Layout bisa di-scroll saat keyboard muncul
         child: SingleChildScrollView(
-          // 4. Padding untuk memberi jarak form dari tepi layar
           padding: const EdgeInsets.all(24.0),
           child: Column(
-            // CrossAxisAlignment.center adalah default,
-            // jadi logo dan judul akan otomatis di tengah
             children: [
-              // Beri jarak dari atas layar
               const SizedBox(height: 40),
 
-            // ini bagaian LOGO
               Image.asset(
                 'assets/logo_tambak.jpg',
                 height: 80,
@@ -59,14 +50,11 @@ class _LoginPageState extends State<LoginPage> {
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: Colors.black, // Pastikan teks terlihat di bg putih
+                  color: Colors.black, 
                 ),
               ),
               const SizedBox(height: 32),
 
-              // --- Form Dimulai ---
-
-              // Label "Login"
               const Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
@@ -80,7 +68,6 @@ class _LoginPageState extends State<LoginPage> {
               ),
               const SizedBox(height: 16),
 
-              // Label "Username"
               const Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
@@ -93,10 +80,10 @@ class _LoginPageState extends State<LoginPage> {
                 decoration: InputDecoration(
                   hintText: 'Enter Username',
                   filled: true,
-                  fillColor: Colors.grey[100], // Warna background field
+                  fillColor: Colors.grey[100], 
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide.none, // Hilangkan border
+                    borderSide: BorderSide.none,
                   ),
                   contentPadding:
                       const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
@@ -104,7 +91,6 @@ class _LoginPageState extends State<LoginPage> {
               ),
               const SizedBox(height: 16),
 
-              // Label "Password"
               const Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
@@ -114,7 +100,7 @@ class _LoginPageState extends State<LoginPage> {
               ),
               const SizedBox(height: 8),
               TextFormField(
-                obscureText: true, // Menyembunyikan teks password
+                obscureText: true, 
                 decoration: InputDecoration(
                   hintText: 'Enter Password',
                   filled: true,
@@ -129,12 +115,11 @@ class _LoginPageState extends State<LoginPage> {
               ),
               const SizedBox(height: 24),
 
-              // Tombol "Masuk"
+              // Masuk Button
               SizedBox(
-                width: double.infinity, // Buat tombol jadi full-width
+                width: double.infinity, 
                 child: ElevatedButton(
                   onPressed: () {
-                    // Navigate to HomePage when login button is pressed
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(builder: (context) => const HomePage()),
@@ -157,17 +142,14 @@ class _LoginPageState extends State<LoginPage> {
               ),
               const SizedBox(height: 16),
 
-              // Baris untuk "Remember me" dan "Forgot Password?"
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  // Bagian "Remember me" (Checkbox + Teks)
                   Row(
                     children: [
                       Checkbox(
                         value: _rememberMe,
                         onChanged: (bool? value) {
-                          // Update state saat checkbox diklik
                           setState(() {
                             _rememberMe = value ?? false;
                           });
@@ -179,10 +161,8 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                     ],
                   ),
-                  // Bagian "Forgot Password?"
                   TextButton(
                     onPressed: () {
-                      // TODO: Tambahkan logika lupa password
                     },
                     child: const Text(
                       'Forgot Password?',

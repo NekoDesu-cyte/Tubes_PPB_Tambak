@@ -1,5 +1,3 @@
-// lib/home_page.dart
-
 import 'package:flutter/material.dart';
 import 'statistik.dart';
 import 'detail_sensor.dart';
@@ -16,8 +14,7 @@ class HomePage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // --- GAMBAR BANNER (FULL-WIDTH) ---
-            // Gambar ini sekarang akan otomatis ada di BELAKANG AppBar
+            // Banner
             Image.asset(
               'assets/tambak_page.jpeg',
               width: double.infinity,
@@ -33,7 +30,6 @@ class HomePage extends StatelessWidget {
               },
             ),
 
-            // --- KONTEN LAIN DENGAN PADDING ---
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
@@ -49,7 +45,7 @@ class HomePage extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
 
-                  // --- KARTU STATISTIK (HORIZONTAL SCROLL) ---
+                  // Kartu Warna Warni yang bisa horizontal Scroll
                   SizedBox(
                     height: 145,
                     child: ListView(
@@ -105,16 +101,10 @@ class HomePage extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 24),
-
-                  // --- KARTU JENIS IKAN (DONUT CHART) ---
                   _buildJenisIkanCard(),
                   const SizedBox(height: 16),
-
-                  // --- KARTU STATUS SENSOR ---
                   _buildStatusSensorCard(context),
                   const SizedBox(height: 16),
-
-                  // --- FOOTER TEXT ---
                   Center(
                     child: Text(
                       'Tambak Kiri Mina Jaya ©2025',
@@ -134,21 +124,16 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  // --- WIDGET BANTUAN ---
-  
-  // --- PERUBAHAN 3: TAMBAHKAN WIDGET BANTUAN INI ---
-  // Widget baru untuk ikon bulat biru di AppBar
   Widget _buildTopIcon(IconData icon) {
     return Padding(
-      // Beri jarak antar ikon
       padding: const EdgeInsets.symmetric(horizontal: 4.0),
       child: CircleAvatar(
-        radius: 20, // Ukuran lingkaran
-        backgroundColor: Colors.blue[700], // Warna biru
+        radius: 20, 
+        backgroundColor: Colors.blue[700], 
         child: Icon(
           icon,
-          color: Colors.white, // Ikon warna putih
-          size: 20, // Ukuran ikon
+          color: Colors.white, 
+          size: 20, 
         ),
       ),
     );
