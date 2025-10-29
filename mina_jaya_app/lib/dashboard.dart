@@ -1,26 +1,23 @@
 // lib/home_page.dart
 
 import 'package:flutter/material.dart';
-import 'statistik.dart'; 
+import 'statistik.dart';
 import 'detail_sensor.dart';
 
-// 1. Ubah dari StatefulWidget menjadi StatelessWidget
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
-  // 2. Hapus semua state (_selectedIndex dan _onItemTapped)
-  //    karena sudah diurus oleh main.dart
-
   @override
   Widget build(BuildContext context) {
-    // 3. Scaffold-nya BOLEH tetap ada (untuk background & layout)
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 230, 230, 230),
+
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // --- GAMBAR BANNER (FULL-WIDTH) ---
+            // Gambar ini sekarang akan otomatis ada di BELAKANG AppBar
             Image.asset(
               'assets/tambak_page.jpeg',
               width: double.infinity,
@@ -134,14 +131,29 @@ class HomePage extends StatelessWidget {
           ],
         ),
       ),
-
-      // 4. HAPUS SEMUA 'bottomNavigationBar' DARI FILE INI
-      // (Bagian 'bottomNavigationBar' yang tadinya ada di sini sudah dihapus)
     );
   }
 
   // --- WIDGET BANTUAN ---
-  // (Pindahkan semua widget bantuan ke sini, di dalam class HomePage)
+  
+  // --- PERUBAHAN 3: TAMBAHKAN WIDGET BANTUAN INI ---
+  // Widget baru untuk ikon bulat biru di AppBar
+  Widget _buildTopIcon(IconData icon) {
+    return Padding(
+      // Beri jarak antar ikon
+      padding: const EdgeInsets.symmetric(horizontal: 4.0),
+      child: CircleAvatar(
+        radius: 20, // Ukuran lingkaran
+        backgroundColor: Colors.blue[700], // Warna biru
+        child: Icon(
+          icon,
+          color: Colors.white, // Ikon warna putih
+          size: 20, // Ukuran ikon
+        ),
+      ),
+    );
+  }
+  // --------------------------------------------------
 
   Widget _buildStatCard({
     required Widget iconWidget,
