@@ -311,7 +311,6 @@ class _StatistikPageState extends State<StatistikPage> {
     );
   }
 
-  // Helper kecil buat nampilin data (Label + Value)
   Widget _buildKolamInfoItem(String label, String value) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

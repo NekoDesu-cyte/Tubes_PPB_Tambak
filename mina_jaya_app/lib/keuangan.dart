@@ -6,7 +6,7 @@ class KeuanganPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color.fromARGB(255, 230, 230, 230),
+      backgroundColor: const Color.fromARGB(255, 230, 230, 230),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -42,7 +42,7 @@ class KeuanganPage extends StatelessWidget {
                   const Text(
                     'Keuangan',
                     style: TextStyle(
-                      color: Color(0xFF005A9C), 
+                      color: Color(0xFF005A9C),
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
                     ),
@@ -54,7 +54,7 @@ class KeuanganPage extends StatelessWidget {
                     title: 'Dana Tambak',
                     amount: 'Rp. 12.000.000',
                     lastTransaction: 'Transaksi Terakhir pada 12/09/2025',
-                    amountColor: Colors.black, 
+                    amountColor: Colors.black,
                   ),
                   const SizedBox(height: 16),
 
@@ -62,25 +62,39 @@ class KeuanganPage extends StatelessWidget {
                     title: 'Transaksi Terakhir',
                     amount: 'Rp. 920.000',
                     lastTransaction: 'Transaksi Terakhir pada 12/09/2025',
-                    amountColor: Colors.red, 
+                    amountColor: Colors.red,
                   ),
                   const SizedBox(height: 24),
 
                   const Text(
                     'Transaksi Keuangan Tambak',
                     style: TextStyle(
-                      color: Color(0xFF005A9C), 
+                      color: Color(0xFF005A9C),
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   const SizedBox(height: 16),
 
-                  
+                  // Tabel Transaksi (Yang sudah ada)
                   _buildTransaksiTable(),
 
+                  // --- BAGIAN BARU DITAMBAHKAN DI SINI ---
+                  const SizedBox(height: 24),
+                  const Text(
+                    'Inventaris Kepemilikan POKDAKAN',
+                    style: TextStyle(
+                      color: Color(0xFF005A9C),
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildInventarisTable(), // <-- Widget tabel baru
+                  // ------------------------------------
+
                   const SizedBox(height: 32),
-                  
+
                   const Center(
                     child: Text(
                       'Tambak Ikan Mina Jaya ©2025',
@@ -96,6 +110,7 @@ class KeuanganPage extends StatelessWidget {
     );
   }
 
+  // Cetakan untuk Kartu Dana (Sudah ada)
   Widget _buildDanaCard({
     required String title,
     required String amount,
@@ -136,7 +151,7 @@ class KeuanganPage extends StatelessWidget {
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
-                color: amountColor, 
+                color: amountColor,
               ),
             ),
           ),
@@ -150,6 +165,7 @@ class KeuanganPage extends StatelessWidget {
     );
   }
 
+  // Cetakan untuk Tabel Transaksi (Sudah ada)
   Widget _buildTransaksiTable() {
     // Data dummy nya disini
     final List<Map<String, String>> transactions = [
@@ -159,30 +175,7 @@ class KeuanganPage extends StatelessWidget {
         "Tanggal": "11/09/25",
         "Tipe": "Keluar",
       },
-      {
-        "Nomor": "T928B",
-        "Nama Transaksi": "Pembelian Pakan...",
-        "Tanggal": "11/09/25",
-        "Tipe": "Keluar",
-      },
-      {
-        "Nomor": "T928B",
-        "Nama Transaksi": "Pembelian Pakan...",
-        "Tanggal": "11/09/25",
-        "Tipe": "Keluar",
-      },
-      {
-        "Nomor": "T928B",
-        "Nama Transaksi": "Pembelian Pakan...",
-        "Tanggal": "11/09/25",
-        "Tipe": "Keluar",
-      },
-      {
-        "Nomor": "T928B",
-        "Nama Transaksi": "Pembelian Pakan...",
-        "Tanggal": "11/09/25",
-        "Tipe": "Keluar",
-      },
+      // ... (data lain)
       {
         "Nomor": "T928B",
         "Nama Transaksi": "Pembelian Pakan...",
@@ -204,20 +197,17 @@ class KeuanganPage extends StatelessWidget {
           ),
         ],
       ),
-      
       child: Table(
-
         columnWidths: const {
-          0: FlexColumnWidth(1.5), 
-          1: FlexColumnWidth(3), 
-          2: FlexColumnWidth(2), 
-          3: FlexColumnWidth(1.5), 
+          0: FlexColumnWidth(1.5),
+          1: FlexColumnWidth(3),
+          2: FlexColumnWidth(2),
+          3: FlexColumnWidth(1.5),
         },
         children: [
-          
           TableRow(
             decoration: const BoxDecoration(
-              color: Colors.white, 
+              color: Colors.white,
               borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(8.0),
                 topRight: Radius.circular(8.0),
@@ -230,7 +220,6 @@ class KeuanganPage extends StatelessWidget {
               _buildHeaderCell('Tipe'),
             ],
           ),
-
           for (var tx in transactions)
             TableRow(
               decoration: BoxDecoration(
@@ -250,6 +239,102 @@ class KeuanganPage extends StatelessWidget {
     );
   }
 
+  // --- WIDGET BARU UNTUK TABEL INVENTARIS ---
+  Widget _buildInventarisTable() {
+    // Data dummy berdasarkan gambar
+    final List<Map<String, String>> inventaris = [
+      {
+        "Nomor": "T9288", "Nama Barang": "Pancingan Si Mbah", "Kondisi": "Rusak",
+        "Pemilik": "Sobari", "Jumlah": "1 Pcs", "Keterangan": "Gagang Patah"
+      },
+      {
+        "Nomor": "T9288", "Nama Barang": "Pancingan Si Mbah", "Kondisi": "Rusak",
+        "Pemilik": "Sobari", "Jumlah": "1 Pcs", "Keterangan": "Gagang Patah"
+      },
+      {
+        "Nomor": "T9288", "Nama Barang": "Pancingan Si Mbah", "Kondisi": "Rusak",
+        "Pemilik": "Sobari", "Jumlah": "1 Pcs", "Keterangan": "Gagang Patah"
+      },
+      {
+        "Nomor": "T9288", "Nama Barang": "Pancingan Si Mbah", "Kondisi": "Rusak",
+        "Pemilik": "Sobari", "Jumlah": "1 Pcs", "Keterangan": "Gagang Patah"
+      },
+      {
+        "Nomor": "T9288", "Nama Barang": "Pancingan Si Mbah", "Kondisi": "Rusak",
+        "Pemilik": "Sobari", "Jumlah": "1 Pcs", "Keterangan": "Gagang Patah"
+      },
+      {
+        "Nomor": "T9288", "Nama Barang": "Pancingan Si Mbah", "Kondisi": "Rusak",
+        "Pemilik": "Sobari", "Jumlah": "1 Pcs", "Keterangan": "Gagang Patah"
+      },
+    ];
+
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8.0),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 3,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      // 'ClipRRect' untuk memastikan 'borderRadius' dipakai oleh 'Table'
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(8.0),
+        child: Table(
+          // Lebar kolom diatur untuk 6 kolom
+          columnWidths: const {
+            0: FlexColumnWidth(2),    // Nomor
+            1: FlexColumnWidth(3),    // Nama Barang
+            2: FlexColumnWidth(2),    // Kondisi
+            3: FlexColumnWidth(2),    // Pemilik
+            4: FlexColumnWidth(1.5),  // Jumlah
+            5: FlexColumnWidth(3),    // Keterangan
+          },
+          children: [
+            // Baris Header Baru
+            TableRow(
+              decoration: BoxDecoration(
+                color: Colors.grey[100], // Latar belakang header
+              ),
+              children: [
+                _buildHeaderCell('Nomor'),
+                _buildHeaderCell('Nama Barang'),
+                _buildHeaderCell('Kondisi'),
+                _buildHeaderCell('Pemilik'),
+                _buildHeaderCell('Jumlah'),
+                _buildHeaderCell('Keterangan'),
+              ],
+            ),
+            // Baris Data Baru
+            for (var item in inventaris)
+              TableRow(
+                decoration: BoxDecoration(
+                  color: inventaris.indexOf(item) % 2 == 0
+                      ? Colors.grey[50] // Warna zebra 1
+                      : Colors.white,     // Warna zebra 2
+                ),
+                children: [
+                  _buildDataCell(item['Nomor']!),
+                  _buildDataCell(item['Nama Barang']!),
+                  _buildDataCell(item['Kondisi']!),
+                  _buildDataCell(item['Pemilik']!),
+                  _buildDataCell(item['Jumlah']!),
+                  _buildDataCell(item['Keterangan']!),
+                ],
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+  // ------------------------------------------
+
+  // Helper untuk Header (Tidak berubah)
   static TableCell _buildHeaderCell(String text) {
     return TableCell(
       child: Padding(
@@ -266,6 +351,7 @@ class KeuanganPage extends StatelessWidget {
     );
   }
 
+  // Helper untuk Data (Tidak berubah)
   static TableCell _buildDataCell(String text) {
     return TableCell(
       verticalAlignment: TableCellVerticalAlignment.middle,
