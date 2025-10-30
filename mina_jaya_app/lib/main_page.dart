@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'dashboard.dart';
-import 'keuangan.dart';
-import 'statistik.dart';
-import 'panen.dart';
+import 'dashboard.dart'; // Mengandung HomePage
+import 'keuangan.dart'; // Mengandung KeuanganPage
+import 'statistik.dart'; // Mengandung StatistikPage
+import 'panen.dart'; // Mengandung PanenPage
+import 'notification.dart'; // Mengandung NotificationPage
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -15,11 +16,12 @@ class _MainPageState extends State<MainPage> {
   int _selectedIndex = 0;
 
   // Pastikan nama class-nya benar: HomePage, PanenPage, dst.
+  // Menghapus 'const' untuk menghindari error GlobalKey
   final List<Widget> _widgetOptions = <Widget>[
-    const HomePage(),
-    const PanenPage(),
-    const StatistikPage(),
-    const KeuanganPage(),
+    HomePage(),
+    PanenPage(),
+    StatistikPage(),
+    KeuanganPage(),
   ];
 
   void _onItemTapped(int index) {
@@ -28,29 +30,33 @@ class _MainPageState extends State<MainPage> {
     });
   }
 
-  // --- WIDGET BANTUAN UNTUK IKON APPBAR (PINDAHAN DARI HOME) ---
-  Widget _buildTopIcon(IconData icon) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4.0),
-      child: CircleAvatar(
-        radius: 20,
-        backgroundColor: Colors.blue[700],
-        child: Icon(
-          icon,
-          color: Colors.white,
-          size: 20,
+  // --- WIDGET BANTUAN UNTUK IKON APPBAR (SUDAH DIMODIFIKASI) ---
+  // 1. Ditambahkan parameter {VoidCallback? onPressed}
+  Widget _buildTopIcon(IconData icon, {VoidCallback? onPressed}) {
+    // 2. Dibungkus GestureDetector agar bisa di-tap
+    return GestureDetector(
+      onTap: onPressed, // <-- Dipasang di sini
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4.0),
+        child: CircleAvatar(
+          radius: 20,
+          backgroundColor: Colors.blue[700],
+          child: Icon(
+            icon,
+            color: Colors.white,
+            size: 20,
+          ),
         ),
       ),
     );
   }
-  // -----------------------------------------------------------
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // --- TAMBAHKAN KODE APPBAR DI SINI ---
-      extendBodyBehindAppBar: true, // <-- BARU
-      appBar: AppBar( // <-- BARU
+      // APPBAR DI SINI
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: const Text(
@@ -70,18 +76,24 @@ class _MainPageState extends State<MainPage> {
         ),
         titleSpacing: 16.0,
         actions: [
-          _buildTopIcon(Icons.mail_outline),
-          _buildTopIcon(Icons.notifications_none),
-          _buildTopIcon(Icons.person_outline),
+          _buildTopIcon(
+            Icons.notifications_none,
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const NotificationPage(),
+                ),
+              );
+            },
+          ),
           const SizedBox(width: 16),
         ],
       ),
-      // -------------------------------------
-
       body: Center(
         child: _widgetOptions.elementAt(_selectedIndex),
       ),
-      
+
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(

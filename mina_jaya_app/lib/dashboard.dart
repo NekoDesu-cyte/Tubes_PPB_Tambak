@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'statistik.dart';
 import 'detail_sensor.dart';
 
 class HomePage extends StatelessWidget {
@@ -123,22 +122,6 @@ class HomePage extends StatelessWidget {
       ),
     );
   }
-
-  Widget _buildTopIcon(IconData icon) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4.0),
-      child: CircleAvatar(
-        radius: 20, 
-        backgroundColor: Colors.blue[700], 
-        child: Icon(
-          icon,
-          color: Colors.white, 
-          size: 20, 
-        ),
-      ),
-    );
-  }
-  // --------------------------------------------------
 
   Widget _buildStatCard({
     required Widget iconWidget,
