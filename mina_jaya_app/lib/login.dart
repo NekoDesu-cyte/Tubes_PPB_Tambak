@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'dashboard.dart';
+import 'main_page.dart';
+import 'services/auth_service.dart'; 
 
 void main() {
   runApp(const MyApp());
@@ -19,13 +20,65 @@ class MyApp extends StatelessWidget {
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
-
+  
   @override
   State<LoginPage> createState() => _LoginPageState();
 }
 
 class _LoginPageState extends State<LoginPage> {
+  // Variable State 
+  final TextEditingController _emailController = TextEditingController(); 
+  final TextEditingController _passwordController = TextEditingController(); 
+  final AuthService _authService = AuthService(); 
+  bool _isLoading = false; 
   bool _rememberMe = false;
+
+  // Fungsi proses login
+  void _handleLogin() async {
+    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Username/Email dan Password harus diisi!'), 
+          backgroundColor: Colors.red
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    bool success = await _authService.login(
+      _emailController.text, 
+      _passwordController.text
+    );
+
+    setState(() {
+      _isLoading = false;
+    });
+
+    if (success) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Login Berhasil!'), backgroundColor: Colors.green),
+        );
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const MainPage()),
+        );
+      }
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Login Gagal. Periksa Email & Password.'), 
+            backgroundColor: Colors.red
+          ),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -76,9 +129,11 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               const SizedBox(height: 8),
+              
               TextFormField(
+                controller: _emailController,
                 decoration: InputDecoration(
-                  hintText: 'Enter Username',
+                  hintText: 'Enter Username / Email',
                   filled: true,
                   fillColor: Colors.grey[100], 
                   border: OutlineInputBorder(
@@ -99,7 +154,9 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               const SizedBox(height: 8),
+              
               TextFormField(
+                controller: _passwordController, 
                 obscureText: true, 
                 decoration: InputDecoration(
                   hintText: 'Enter Password',
@@ -119,15 +176,10 @@ class _LoginPageState extends State<LoginPage> {
               SizedBox(
                 width: double.infinity, 
                 child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => const HomePage()),
-                    );
-                  },
+                  onPressed: _isLoading ? null : _handleLogin, 
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue[700], // Warna tombol
-                    foregroundColor: Colors.white, // Warna teks tombol
+                    backgroundColor: Colors.blue[700], 
+                    foregroundColor: Colors.white, 
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
@@ -137,7 +189,13 @@ class _LoginPageState extends State<LoginPage> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  child: const Text('Masuk'),
+                  child: _isLoading 
+                    ? const SizedBox(
+                        height: 20, 
+                        width: 20, 
+                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
+                      )
+                    : const Text('Masuk'),
                 ),
               ),
               const SizedBox(height: 16),

@@ -1,13 +1,72 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'services/keuangan_service.dart';
+import 'services/inventaris_service.dart';
 
-class KeuanganPage extends StatelessWidget {
+class KeuanganPage extends StatefulWidget {
   const KeuanganPage({super.key});
+
+  @override
+  State<KeuanganPage> createState() => _KeuanganPageState();
+}
+
+class _KeuanganPageState extends State<KeuanganPage> {
+  bool _isLoading = true;
+  double _saldo = 0;
+  List<dynamic> _transaksiList = [];
+  List<dynamic> _inventarisList = []; // [BARU] Variable untuk inventaris
+
+  final KeuanganService _keuanganService = KeuanganService();
+  final InventarisService _inventarisService = InventarisService();
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchData();
+  }
+
+  // Fungsi ambil data dari API
+  Future<void> _fetchData() async {
+    try {
+      // Panggil kedua API secara bersamaan agar lebih cepat
+      final keuanganData = await _keuanganService.getKeuanganData();
+      final inventarisData = await _inventarisService.getInventaris(); // [BARU]
+
+      setState(() {
+        _saldo = double.parse(keuanganData['saldo'].toString());
+        _transaksiList = keuanganData['data'];
+        _inventarisList = inventarisData; // [BARU] Simpan data inventaris
+        _isLoading = false;
+      });
+    } catch (e) {
+      print("Error: $e");
+      setState(() => _isLoading = false);
+    }
+  }
+
+  // Helper Format Rupiah
+  String _formatRupiah(double amount) {
+    final formatCurrency = NumberFormat.currency(locale: 'id_ID', symbol: 'Rp ', decimalDigits: 0);
+    return formatCurrency.format(amount);
+  }
+
+  // Helper Format Tanggal (Simple)
+  String _formatTanggal(String dateString) {
+    try {
+      DateTime date = DateTime.parse(dateString);
+      return "${date.day}/${date.month}/${date.year}";
+    } catch (e) {
+      return dateString;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 230, 230, 230),
-      body: SingleChildScrollView(
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -22,13 +81,7 @@ class KeuanganPage extends StatelessWidget {
                   height: 200,
                   width: double.infinity,
                   color: Colors.grey[300],
-                  child: const Center(
-                    child: Text(
-                      'Gagal memuat gambar',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.black54),
-                    ),
-                  ),
+                  child: const Center(child: Icon(Icons.image_not_supported)),
                 );
               },
             ),
@@ -49,25 +102,30 @@ class KeuanganPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
 
-                  // Card Content
+                  // Card Saldo (Dinamis dari API)
                   _buildDanaCard(
-                    title: 'Dana Tambak',
-                    amount: 'Rp. 12.000.000',
-                    lastTransaction: 'Transaksi Terakhir pada 12/09/2025',
-                    amountColor: Colors.black,
+                    title: 'Dana Tambak (Saldo)',
+                    amount: _formatRupiah(_saldo),
+                    lastTransaction: 'Update Realtime',
+                    amountColor: _saldo >= 0 ? Colors.green : Colors.red,
                   ),
                   const SizedBox(height: 16),
 
+                  // Card Transaksi Terakhir (Ambil dari data pertama list)
                   _buildDanaCard(
                     title: 'Transaksi Terakhir',
-                    amount: 'Rp. 920.000',
-                    lastTransaction: 'Transaksi Terakhir pada 12/09/2025',
-                    amountColor: Colors.red,
+                    amount: _transaksiList.isNotEmpty
+                        ? _formatRupiah(double.parse(_transaksiList[0]['nominal'].toString()))
+                        : 'Rp 0',
+                    lastTransaction: _transaksiList.isNotEmpty
+                        ? 'Pada ${_formatTanggal(_transaksiList[0]['created_at'] ?? DateTime.now().toString())}'
+                        : '-',
+                    amountColor: Colors.black,
                   ),
                   const SizedBox(height: 24),
 
                   const Text(
-                    'Transaksi Keuangan Tambak',
+                    'Riwayat Transaksi',
                     style: TextStyle(
                       color: Color(0xFF005A9C),
                       fontSize: 18,
@@ -76,11 +134,12 @@ class KeuanganPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
 
-                  // Tabel Transaksi (Yang sudah ada)
+                  // Tabel Transaksi (Dinamis)
                   _buildTransaksiTable(),
 
-                  // --- BAGIAN BARU DITAMBAHKAN DI SINI ---
                   const SizedBox(height: 24),
+
+                  // Note: Inventaris dibiarkan Static dulu karena API Controller Inventaris belum diberikan
                   const Text(
                     'Inventaris Kepemilikan POKDAKAN',
                     style: TextStyle(
@@ -90,11 +149,9 @@ class KeuanganPage extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  _buildInventarisTable(), // <-- Widget tabel baru
-                  // ------------------------------------
+                  _buildInventarisTable(),
 
                   const SizedBox(height: 32),
-
                   const Center(
                     child: Text(
                       'Tambak Ikan Mina Jaya ©2025',
@@ -110,7 +167,7 @@ class KeuanganPage extends StatelessWidget {
     );
   }
 
-  // Cetakan untuk Kartu Dana (Sudah ada)
+  // Cetakan untuk Kartu Dana
   Widget _buildDanaCard({
     required String title,
     required String amount,
@@ -149,7 +206,7 @@ class KeuanganPage extends StatelessWidget {
             child: Text(
               amount,
               style: TextStyle(
-                fontSize: 28,
+                fontSize: 26, // Sedikit diperkecil agar muat
                 fontWeight: FontWeight.bold,
                 color: amountColor,
               ),
@@ -165,24 +222,16 @@ class KeuanganPage extends StatelessWidget {
     );
   }
 
-  // Cetakan untuk Tabel Transaksi (Sudah ada)
+  // Cetakan untuk Tabel Transaksi (DINAMIS)
   Widget _buildTransaksiTable() {
-    // Data dummy nya disini
-    final List<Map<String, String>> transactions = [
-      {
-        "Nomor": "T928B",
-        "Nama Transaksi": "Pembelian Pakan...",
-        "Tanggal": "11/09/25",
-        "Tipe": "Keluar",
-      },
-      // ... (data lain)
-      {
-        "Nomor": "T928B",
-        "Nama Transaksi": "Pembelian Pakan...",
-        "Tanggal": "11/09/25",
-        "Tipe": "Keluar",
-      },
-    ];
+    if (_transaksiList.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(20),
+        width: double.infinity,
+        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
+        child: const Center(child: Text("Belum ada data transaksi")),
+      );
+    }
 
     return Container(
       decoration: BoxDecoration(
@@ -199,10 +248,10 @@ class KeuanganPage extends StatelessWidget {
       ),
       child: Table(
         columnWidths: const {
-          0: FlexColumnWidth(1.5),
-          1: FlexColumnWidth(3),
-          2: FlexColumnWidth(2),
-          3: FlexColumnWidth(1.5),
+          0: FlexColumnWidth(1),   // No
+          1: FlexColumnWidth(3),   // Ket
+          2: FlexColumnWidth(2),   // Tgl
+          3: FlexColumnWidth(2.5), // Nominal
         },
         children: [
           TableRow(
@@ -214,24 +263,38 @@ class KeuanganPage extends StatelessWidget {
               ),
             ),
             children: [
-              _buildHeaderCell('Nomor'),
-              _buildHeaderCell('Nama Transaksi'),
-              _buildHeaderCell('Tanggal'),
-              _buildHeaderCell('Tipe'),
+              _buildHeaderCell('No'),
+              _buildHeaderCell('Keterangan'),
+              _buildHeaderCell('Tgl'),
+              _buildHeaderCell('Nominal'),
             ],
           ),
-          for (var tx in transactions)
+          // Loop data dari API
+          for (var i = 0; i < _transaksiList.length; i++)
             TableRow(
               decoration: BoxDecoration(
-                color: transactions.indexOf(tx) % 2 == 0
-                    ? Colors.grey[50]
-                    : Colors.white,
+                color: i % 2 == 0 ? Colors.grey[50] : Colors.white,
               ),
               children: [
-                _buildDataCell(tx['Nomor']!),
-                _buildDataCell(tx['Nama Transaksi']!),
-                _buildDataCell(tx['Tanggal']!),
-                _buildDataCell(tx['Tipe']!),
+                _buildDataCell((i + 1).toString()), // Nomor urut
+                _buildDataCell(_transaksiList[i]['keterangan'] ?? '-'),
+                _buildDataCell(_formatTanggal(_transaksiList[i]['created_at'] ?? '')),
+
+                // Cell Nominal dengan warna (Merah = Keluar, Hijau = Masuk)
+                TableCell(
+                  verticalAlignment: TableCellVerticalAlignment.middle,
+                  child: Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: Text(
+                      _formatRupiah(double.parse(_transaksiList[i]['nominal'].toString())),
+                      style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: _transaksiList[i]['tipe'] == 'Pengeluaran' ? Colors.red : Colors.green
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
         ],
@@ -239,92 +302,55 @@ class KeuanganPage extends StatelessWidget {
     );
   }
 
-  // --- WIDGET BARU UNTUK TABEL INVENTARIS ---
+  // --- Tabel Inventaris (Masih Static/Dummy karena controller belum ada) ---
   Widget _buildInventarisTable() {
-    // Data dummy berdasarkan gambar
-    final List<Map<String, String>> inventaris = [
-      {
-        "Nomor": "T9288", "Nama Barang": "Pancingan Si Mbah", "Kondisi": "Rusak",
-        "Pemilik": "Sobari", "Jumlah": "1 Pcs", "Keterangan": "Gagang Patah"
-      },
-      {
-        "Nomor": "T9288", "Nama Barang": "Pancingan Si Mbah", "Kondisi": "Rusak",
-        "Pemilik": "Sobari", "Jumlah": "1 Pcs", "Keterangan": "Gagang Patah"
-      },
-      {
-        "Nomor": "T9288", "Nama Barang": "Pancingan Si Mbah", "Kondisi": "Rusak",
-        "Pemilik": "Sobari", "Jumlah": "1 Pcs", "Keterangan": "Gagang Patah"
-      },
-      {
-        "Nomor": "T9288", "Nama Barang": "Pancingan Si Mbah", "Kondisi": "Rusak",
-        "Pemilik": "Sobari", "Jumlah": "1 Pcs", "Keterangan": "Gagang Patah"
-      },
-      {
-        "Nomor": "T9288", "Nama Barang": "Pancingan Si Mbah", "Kondisi": "Rusak",
-        "Pemilik": "Sobari", "Jumlah": "1 Pcs", "Keterangan": "Gagang Patah"
-      },
-      {
-        "Nomor": "T9288", "Nama Barang": "Pancingan Si Mbah", "Kondisi": "Rusak",
-        "Pemilik": "Sobari", "Jumlah": "1 Pcs", "Keterangan": "Gagang Patah"
-      },
-    ];
+    if (_inventarisList.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(20),
+        width: double.infinity,
+        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
+        child: const Center(child: Text("Belum ada data inventaris")),
+      );
+    }
 
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8.0),
         boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 3,
-            offset: const Offset(0, 2),
-          ),
+          BoxShadow(color: Colors.grey.withOpacity(0.1), spreadRadius: 1, blurRadius: 3, offset: const Offset(0, 2)),
         ],
       ),
-      // 'ClipRRect' untuk memastikan 'borderRadius' dipakai oleh 'Table'
       child: ClipRRect(
         borderRadius: BorderRadius.circular(8.0),
         child: Table(
-          // Lebar kolom diatur untuk 6 kolom
           columnWidths: const {
-            0: FlexColumnWidth(2),    // Nomor
-            1: FlexColumnWidth(3),    // Nama Barang
-            2: FlexColumnWidth(2),    // Kondisi
-            3: FlexColumnWidth(2),    // Pemilik
-            4: FlexColumnWidth(1.5),  // Jumlah
-            5: FlexColumnWidth(3),    // Keterangan
+            0: FlexColumnWidth(3), // Nama Barang
+            1: FlexColumnWidth(2), // Kondisi
+            2: FlexColumnWidth(2), // Pemilik
+            3: FlexColumnWidth(1.5), // Jumlah
           },
           children: [
-            // Baris Header Baru
+            // Header
             TableRow(
-              decoration: BoxDecoration(
-                color: Colors.grey[100], // Latar belakang header
-              ),
+              decoration: BoxDecoration(color: Colors.grey[100]),
               children: [
-                _buildHeaderCell('Nomor'),
                 _buildHeaderCell('Nama Barang'),
-                _buildHeaderCell('Kondisi'),
-                _buildHeaderCell('Pemilik'),
-                _buildHeaderCell('Jumlah'),
-                _buildHeaderCell('Keterangan'),
+                _buildHeaderCell('Kondisi'), // Pastikan ada kolom ini di DB atau hapus jika tidak ada
+                _buildHeaderCell('Pemilik'), // Pastikan ada kolom ini di DB
+                _buildHeaderCell('Jml'),
               ],
             ),
-            // Baris Data Baru
-            for (var item in inventaris)
+            // Data Rows
+            for (var i = 0; i < _inventarisList.length; i++)
               TableRow(
-                decoration: BoxDecoration(
-                  color: inventaris.indexOf(item) % 2 == 0
-                      ? Colors.grey[50] // Warna zebra 1
-                      : Colors.white,     // Warna zebra 2
-                ),
+                decoration: BoxDecoration(color: i % 2 == 0 ? Colors.white : Colors.grey[50]),
                 children: [
-                  _buildDataCell(item['Nomor']!),
-                  _buildDataCell(item['Nama Barang']!),
-                  _buildDataCell(item['Kondisi']!),
-                  _buildDataCell(item['Pemilik']!),
-                  _buildDataCell(item['Jumlah']!),
-                  _buildDataCell(item['Keterangan']!),
+                  _buildDataCell(_inventarisList[i]['nama_barang'] ?? '-'),
+                  // Sesuaikan key di bawah dengan nama kolom database Anda
+                  _buildDataCell(_inventarisList[i]['kondisi'] ?? '-'),
+                  _buildDataCell(_inventarisList[i]['pemilik'] ?? '-'),
+                  _buildDataCell(_inventarisList[i]['jumlah'].toString()),
                 ],
               ),
           ],
@@ -332,35 +358,25 @@ class KeuanganPage extends StatelessWidget {
       ),
     );
   }
-  // ------------------------------------------
 
-  // Helper untuk Header (Tidak berubah)
   static TableCell _buildHeaderCell(String text) {
     return TableCell(
       child: Padding(
         padding: const EdgeInsets.all(12.0),
         child: Text(
           text,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.grey,
-            fontSize: 13,
-          ),
+          style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.grey, fontSize: 12),
         ),
       ),
     );
   }
 
-  // Helper untuk Data (Tidak berubah)
   static TableCell _buildDataCell(String text) {
     return TableCell(
       verticalAlignment: TableCellVerticalAlignment.middle,
       child: Padding(
         padding: const EdgeInsets.all(12.0),
-        child: Text(
-          text,
-          style: const TextStyle(color: Colors.black87, fontSize: 13),
-        ),
+        child: Text(text, style: const TextStyle(color: Colors.black87, fontSize: 12)),
       ),
     );
   }

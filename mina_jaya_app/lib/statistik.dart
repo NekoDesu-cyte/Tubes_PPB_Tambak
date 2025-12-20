@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:fl_chart/fl_chart.dart';
+import 'services/kolam_service.dart';
 
 class StatistikPage extends StatefulWidget {
   const StatistikPage({super.key});
@@ -14,7 +15,10 @@ class _StatistikPageState extends State<StatistikPage> {
   List<double> suhu = [];
   List<double> ph = [];
   List<double> oksigen = [];
+  List<dynamic> _kolamList = [];
   bool isLoading = true;
+
+  final KolamService _kolamService = KolamService();
 
   @override
   void initState() {
@@ -25,17 +29,20 @@ class _StatistikPageState extends State<StatistikPage> {
   // Fungsi buat load data JSON untuk chart
   Future<void> loadJsonData() async {
     try {
-      final String response =
-          await rootBundle.loadString('assets/data/statistik.json');
-      final data = json.decode(response);
+      final String response = await rootBundle.loadString('assets/data/statistik.json');
+      final dataChart = json.decode(response);
+
+      final dataKolamAPI = await _kolamService.getKolam();
+
       setState(() {
-        suhu = List<double>.from(data['suhu'].map((x) => x.toDouble()));
-        ph = List<double>.from(data['ph'].map((x) => x.toDouble()));
-        oksigen = List<double>.from(data['oksigen'].map((x) => x.toDouble()));
+        // Data Kolam
+        _kolamList = dataKolamAPI;
+
         isLoading = false;
       });
     } catch (e) {
       debugPrint('Gagal memuat data: $e');
+      setState(() => isLoading = false);
     }
   }
 
@@ -149,26 +156,15 @@ class _StatistikPageState extends State<StatistikPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'Statistik Tambak',
+                          'Data Kolam',
                           style: TextStyle(
                             color: Color(0xFF005A9C),
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(height: 16),
-                        _buildChartCard(
-                            'Riwayat Suhu Air 24 Jam Terakhir', suhu),
-                        _buildChartCard(
-                            'Riwayat pH Air 24 Jam Terakhir', ph),
-                        _buildChartCard(
-                            'Riwayat Kadar Oksigen Air 24 Jam Terakhir',
-                            oksigen),
-
-                        // --- KODE BARU DITAMBAHKAN DI SINI ---
-                        const SizedBox(height: 24), // Kasih jarak
-                        _buildDataKolamSection(), // Panggil fungsi Data Kolam
-                        // ------------------------------------
+                        const SizedBox(height: 24),
+                        _buildDataKolamSection(),
 
                         const SizedBox(height: 32),
                         const Center(
@@ -186,57 +182,19 @@ class _StatistikPageState extends State<StatistikPage> {
     );
   }
 
-  // --- KODE BARU (3 FUNGSI) DITEMPEL DI SINI ---
-  // Ini 3 fungsi yang kita pindahin dari 'panen.dart'
-
-  // --- WIDGET DATA KOLAM (PINDAHAN) ---
   Widget _buildDataKolamSection() {
-    // Data dummy sesuai gambar
-    final List<Map<String, dynamic>> dataKolam = [
-      {
-        "nama": "KOLAM 1",
-        "jenis_ikan": "Mujair",
-        "status_pakan": "Diberikan",
-        "suhu_air": "28°C",
-        "oksigen_air": "28°C",
-        "ph_air": "6.13",
-        "pemilik": "Sujarwo"
-      },
-      {
-        "nama": "KOLAM 2",
-        "jenis_ikan": "Mujair",
-        "status_pakan": "Diberikan",
-        "suhu_air": "28°C",
-        "oksigen_air": "28°C",
-        "ph_air": "6.13",
-        "pemilik": "Sujarwo"
-      },
-      {
-        "nama": "KOLAM 3",
-        "jenis_ikan": "Mujair",
-        "status_pakan": "Diberikan",
-        "suhu_air": "28°C",
-        "oksigen_air": "28°C",
-        "ph_air": "6.13",
-        "pemilik": "Sujarwo"
-      },
-    ];
+    if (_kolamList.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 20),
+        child: Center(child: Text("Data Kolam tidak tersedia")),
+      );
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Judul
-        const Text(
-          'Data Kolam',
-          style: TextStyle(
-            color: Color(0xFF005A9C),
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
         const SizedBox(height: 16),
-        // list kartu-kartu
-        ...dataKolam.map((kolam) {
+        ..._kolamList.map((kolam) {
           return Padding(
             padding: const EdgeInsets.only(bottom: 16.0),
             child: _buildKolamCard(kolam),
@@ -267,7 +225,7 @@ class _StatistikPageState extends State<StatistikPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            kolamData['nama'],
+            kolamData['nama_kolam'] ?? 'Tanpa Nama', // Sesuai DB
             style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -280,12 +238,11 @@ class _StatistikPageState extends State<StatistikPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildKolamInfoItem(
-                        'Jenis Ikan', kolamData['jenis_ikan']),
+                    _buildKolamInfoItem('Jenis Ikan', kolamData['jenis_ikan'] ?? '-'),
                     const SizedBox(height: 12),
-                    _buildKolamInfoItem('Suhu Air', kolamData['suhu_air']),
+                    _buildKolamInfoItem('Suhu Air', "${kolamData['suhu_air']}°C"),
                     const SizedBox(height: 12),
-                    _buildKolamInfoItem('PH Air', kolamData['ph_air']),
+                    _buildKolamInfoItem('PH Air', kolamData['ph_air'].toString()),
                   ],
                 ),
               ),
@@ -294,13 +251,12 @@ class _StatistikPageState extends State<StatistikPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildKolamInfoItem(
-                        'Status Pakan', kolamData['status_pakan']),
+                    _buildKolamInfoItem('Status Pakan', kolamData['status_pakan'] ?? '-'),
                     const SizedBox(height: 12),
-                    _buildKolamInfoItem(
-                        'Oksigen Air', kolamData['oksigen_air']),
+                    // Note: Jika di DB tidak ada kolom oksigen, bisa di hardcode atau tambah kolom baru
+                    _buildKolamInfoItem('Status Kolam', kolamData['status'] ?? 'Aktif'),
                     const SizedBox(height: 12),
-                    _buildKolamInfoItem('Pemilik Kolam', kolamData['pemilik']),
+                    _buildKolamInfoItem('Pemilik', kolamData['pemilik'] ?? '-'),
                   ],
                 ),
               ),

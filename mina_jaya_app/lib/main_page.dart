@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-import 'dashboard.dart'; // Mengandung HomePage
-import 'keuangan.dart'; // Mengandung KeuanganPage
-import 'statistik.dart'; // Mengandung StatistikPage
-import 'panen.dart'; // Mengandung PanenPage
-import 'notification.dart'; // Mengandung NotificationPage
+import 'package:mina_jaya_app/services/auth_service.dart';
+import 'dashboard.dart';
+import 'keuangan.dart';
+import 'statistik.dart';
+import 'panen.dart';
+import 'notification.dart';
+import 'profile_page.dart'; // Pastikan file ini sudah ada
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -15,14 +17,31 @@ class MainPage extends StatefulWidget {
 class _MainPageState extends State<MainPage> {
   int _selectedIndex = 0;
 
-  // Pastikan nama class-nya benar: HomePage, PanenPage, dst.
-  // Menghapus 'const' untuk menghindari error GlobalKey
+  String userName = 'Pengguna';
+
   final List<Widget> _widgetOptions = <Widget>[
-    HomePage(),
-    PanenPage(),
-    StatistikPage(),
-    KeuanganPage(),
+    const HomePage(),      // Pastikan dashboard.dart tidak punya AppBar lagi agar tidak double
+    const PanenPage(),
+    const StatistikPage(),
+    const KeuanganPage(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserName();
+  }
+
+  void _loadUserName() async {
+    final authService = AuthService();
+    final userData = await authService.getUserProfile();
+
+    if (userData != null) {
+      setState(() {
+        userName = userData['name'] ?? 'Pengguna';
+      });
+    }
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -30,12 +49,10 @@ class _MainPageState extends State<MainPage> {
     });
   }
 
-  // --- WIDGET BANTUAN UNTUK IKON APPBAR (SUDAH DIMODIFIKASI) ---
-  // 1. Ditambahkan parameter {VoidCallback? onPressed}
+  // Widget helper untuk membuat tombol bulat biru
   Widget _buildTopIcon(IconData icon, {VoidCallback? onPressed}) {
-    // 2. Dibungkus GestureDetector agar bisa di-tap
     return GestureDetector(
-      onTap: onPressed, // <-- Dipasang di sini
+      onTap: onPressed,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 4.0),
         child: CircleAvatar(
@@ -54,13 +71,13 @@ class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // APPBAR DI SINI
+      // Agar background konten (gambar tambak) bisa naik ke belakang AppBar
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.transparent, // Transparan agar menyatu dengan gambar di halaman anak
         elevation: 0,
-        title: const Text(
-          'Selamat Datang, Hafizh',
+        title: Text(
+          'Selamat Datang, $userName',
           style: TextStyle(
             color: Colors.white,
             fontSize: 18,
@@ -76,6 +93,7 @@ class _MainPageState extends State<MainPage> {
         ),
         titleSpacing: 16.0,
         actions: [
+          // 1. Tombol Notifikasi (Lonceng)
           _buildTopIcon(
             Icons.notifications_none,
             onPressed: () {
@@ -87,10 +105,25 @@ class _MainPageState extends State<MainPage> {
               );
             },
           ),
-          const SizedBox(width: 16),
+
+          // 2. [BARU] Tombol Profil
+          _buildTopIcon(
+            Icons.person, // Ikon orang/profil
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const ProfilePage(),
+                ),
+              );
+            },
+          ),
+
+          const SizedBox(width: 16), // Jarak di sebelah kanan
         ],
       ),
       body: Center(
+        // Menampilkan halaman sesuai tab yang dipilih
         child: _widgetOptions.elementAt(_selectedIndex),
       ),
 
