@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'detail_sensor.dart';
-import 'notification.dart';
-import 'profile_page.dart';
-import 'services/dashboard_service.dart'; // [BARU] Import Service
+import 'services/dashboard_service.dart';
 
-// [UBAH] Jadi StatefulWidget
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -14,8 +11,9 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  // Variable Data
   bool _isLoading = true;
+
+  // Data Dummy untuk inisialisasi (akan ditimpa API)
   Map<String, dynamic> _sensorData = {
     'suhu': 0,
     'ph': 0,
@@ -23,14 +21,18 @@ class _HomePageState extends State<HomePage> {
   };
   List<dynamic> _pieChartData = [];
 
-  // Warna untuk Pie Chart (Urutan warna)
+  // Hitungan Sensor
+  int _totalSensor = 3; // Suhu, pH, Oksigen (Pakan dihapus)
+  int _sensorAktif = 0;
+  int _sensorMati = 0;
+
   final List<Color> _colors = [
-    Colors.blue,
-    Colors.green,
-    Colors.orange,
-    Colors.purple,
+    const Color(0xFF1E88E5), // Biru (Mujair)
+    const Color(0xFF43A047), // Hijau (Lele)
+    const Color(0xFFFB8C00), // Orange (Nila)
+    const Color(0xFF00ACC1), // Cyan (Patin)
     Colors.red,
-    Colors.teal,
+    Colors.purple,
   ];
 
   @override
@@ -44,9 +46,19 @@ class _HomePageState extends State<HomePage> {
     final data = await service.getDashboardData();
 
     if (data != null) {
+      var sensors = data['sensor'];
+
+      // Hitung Sensor Aktif (Cek Suhu, pH, Oksigen)
+      int aktif = 0;
+      if (sensors['suhu'] != 0 && sensors['suhu'] != '0') aktif++;
+      if (sensors['ph'] != 0 && sensors['ph'] != '0') aktif++;
+      if (sensors['oksigen'] != 0 && sensors['oksigen'] != '0') aktif++;
+
       setState(() {
         _sensorData = data['sensor'];
-        _pieChartData = data['pie_chart']; // Format: [{jenis_ikan: 'Nila', total: 5}, ...]
+        _pieChartData = data['pie_chart'];
+        _sensorAktif = aktif;
+        _sensorMati = _totalSensor - _sensorAktif;
         _isLoading = false;
       });
     } else {
@@ -56,205 +68,289 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    // Hitung Total Ikan untuk Persentase
+    // Hitung Total Ikan
     int totalSemuaIkan = 0;
     for (var item in _pieChartData) {
       totalSemuaIkan += int.parse(item['total'].toString());
     }
 
     return Scaffold(
-      backgroundColor: Colors.white,
-      // AppBar sudah di handle di Main Page?
-      // Jika Dashboard berdiri sendiri pakai Scaffold body.
-      // Tapi jika dipanggil di MainPage, kita sesuaikan padding atasnya.
+      backgroundColor: const Color(0xFFF5F5F5), // Background abu muda
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Banner Image
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12.0),
-                child: Image.asset(
-                  'assets/tambak.png', // Pastikan nama file gambar benar
+            //  Header Image
+            Stack(
+              children: [
+                Image.asset(
+                  'assets/tambak_page.jpeg',
                   width: double.infinity,
-                  height: 180,
+                  height: 200,
                   fit: BoxFit.cover,
-                  errorBuilder: (ctx, err, stack) => Container(
-                      height: 180,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      height: 200,
                       color: Colors.grey[300],
-                      child: const Center(child: Icon(Icons.image, size: 50, color: Colors.grey))
-                  ),
-                ),
-              ),
-            ),
-
-            // Statistik Horizontal (DATA DARI API)
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.0),
-              child: Text(
-                'Statistik Sensor Terkini',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Row(
-                children: [
-                  _buildStatCard('Suhu Air', '${_sensorData['suhu']}°C', Colors.blue),
-                  const SizedBox(width: 12),
-                  _buildStatCard('pH Air', '${_sensorData['ph']}', Colors.green),
-                  const SizedBox(width: 12),
-                  // Oksigen ambil dari API, jika 0 tampilkan strip
-                  _buildStatCard('Oksigen (DO)', '${_sensorData['oksigen']} mg/L', Colors.purple),
-                  const SizedBox(width: 12),
-                  // Status pakan statis dulu atau logic tersendiri
-                  _buildStatCard('Status Pakan', 'Aman', Colors.orange),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // Grafik Ikan (Pie Chart DINAMIS)
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.0),
-              child: Text(
-                'Komposisi Ikan dalam Tambak',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            if (_pieChartData.isEmpty)
-              const Center(child: Text("Belum ada data kolam aktif.", style: TextStyle(color: Colors.grey)))
-            else
-              SizedBox(
-                height: 200,
-                child: PieChart(
-                  PieChartData(
-                    sectionsSpace: 2,
-                    centerSpaceRadius: 40,
-                    sections: List.generate(_pieChartData.length, (index) {
-                      final ikan = _pieChartData[index];
-                      final jumlah = int.parse(ikan['total'].toString());
-                      final persentase = totalSemuaIkan > 0
-                          ? (jumlah / totalSemuaIkan * 100).toStringAsFixed(1)
-                          : '0';
-                      final color = _colors[index % _colors.length]; // Putar warna
-
-                      return PieChartSectionData(
-                        color: color,
-                        value: jumlah.toDouble(),
-                        title: '${ikan['jenis_ikan']}\n$persentase%',
-                        radius: 60,
-                        titleStyle: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white),
-                      );
-                    }),
-                  ),
-                ),
-              ),
-
-            // Legend / Keterangan Warna (Manual Loop)
-            if (_pieChartData.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Wrap(
-                  spacing: 16,
-                  runSpacing: 8,
-                  children: List.generate(_pieChartData.length, (index) {
-                    final ikan = _pieChartData[index];
-                    final color = _colors[index % _colors.length];
-                    return Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(width: 12, height: 12, color: color),
-                        const SizedBox(width: 4),
-                        Text('${ikan['jenis_ikan']} (${ikan['total']})', style: const TextStyle(fontSize: 12)),
-                      ],
-                    );
-                  }),
-                ),
-              ),
-
-            const SizedBox(height: 24),
-
-            // Tombol Sensor
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const DetailSensorPage()),
+                      child: const Center(
+                        child: Text('Gagal memuat gambar'),
+                      ),
                     );
                   },
-                  icon: const Icon(Icons.sensors),
-                  label: const Text('Lihat Detail Semua Sensor'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue[700],
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                ),
+                // Overlay Gradient (Opsional biar teks AppBar terbaca)
+                Container(
+                  height: 220,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.black.withOpacity(0.6),
+                        Colors.transparent,
+                      ],
                     ),
                   ),
                 ),
+              ],
+            ),
+
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // JUDUL SECTION
+                  const Text(
+                    "DASHBOARD KOLAM",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // 2. KARTU SENSOR (SUHU, PH, OKSIGEN)
+                  // Menggunakan Row & Expanded agar ukuran menyesuaikan
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildSensorCard(
+                          title: "Suhu Kolam",
+                          value: "${_sensorData['suhu']} °C",
+                          icon: Icons.thermostat,
+                          color: const Color(0xFF1976D2), // Biru
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildSensorCard(
+                          title: "pH Air Kolam",
+                          value: "${_sensorData['ph']}",
+                          icon: Icons.water_drop,
+                          color: const Color(0xFFF57C00), // Orange
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  // Oksigen taruh bawahnya (Full width atau row lagi)
+                  // Biar rapi, Oksigen kita taruh sendiri tapi style sama
+                  _buildSensorCard(
+                    title: "Oksigen (DO)",
+                    value: "${_sensorData['oksigen']} mg/L",
+                    icon: Icons.air,
+                    color: const Color(0xFF7B1FA2), // Ungu
+                    isFullWidth: true,
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // 3. JENIS IKAN (PIE CHART + LEGEND)
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(color: Colors.grey.shade200, blurRadius: 10, offset: const Offset(0, 5)),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text("Jenis Ikan", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 20),
+
+                        if (_pieChartData.isEmpty)
+                          const Center(child: Padding(padding: EdgeInsets.all(20), child: Text("Data Kosong")))
+                        else
+                          Row(
+                            children: [
+                              // BAGIAN KIRI: CHART
+                              SizedBox(
+                                height: 120,
+                                width: 120,
+                                child: PieChart(
+                                  PieChartData(
+                                    sectionsSpace: 0,
+                                    centerSpaceRadius: 35, // Bolong tengah (Donut)
+                                    sections: List.generate(_pieChartData.length, (index) {
+                                      final ikan = _pieChartData[index];
+                                      final jumlah = int.parse(ikan['total'].toString());
+                                      final color = _colors[index % _colors.length];
+                                      return PieChartSectionData(
+                                        color: color,
+                                        value: jumlah.toDouble(),
+                                        title: '', // Hapus judul di chart
+                                        radius: 25,
+                                      );
+                                    }),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 24),
+
+                              // BAGIAN KANAN: LEGEND LIST
+                              Expanded(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: List.generate(_pieChartData.length, (index) {
+                                    final ikan = _pieChartData[index];
+                                    final jumlah = int.parse(ikan['total'].toString());
+                                    final persentase = totalSemuaIkan > 0
+                                        ? (jumlah / totalSemuaIkan * 100).toStringAsFixed(0)
+                                        : '0';
+                                    final color = _colors[index % _colors.length];
+
+                                    return Padding(
+                                      padding: const EdgeInsets.only(bottom: 8.0),
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              CircleAvatar(radius: 5, backgroundColor: color),
+                                              const SizedBox(width: 8),
+                                              Text(ikan['jenis_ikan'], style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500)),
+                                            ],
+                                          ),
+                                          Text("$persentase%", style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                                        ],
+                                      ),
+                                    );
+                                  }),
+                                ),
+                              ),
+                            ],
+                          ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // 4. STATUS SENSOR KOLAM (LIST)
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(color: Colors.grey.shade200, blurRadius: 10, offset: const Offset(0, 5)),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text("Status Sensor Kolam", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 16),
+
+                        _buildStatusListRow("Total Sensor", "$_totalSensor", Colors.blue),
+                        const Divider(height: 24),
+                        _buildStatusListRow("Sensor Aktif", "$_sensorAktif", Colors.green),
+                        const Divider(height: 24),
+                        _buildStatusListRow("Sensor Inaktif", "$_sensorMati", Colors.grey),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // Tombol Detail (Opsional)
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => const DetailSensorPage()));
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue[700],
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                      child: const Text("Lihat Detail Sensor", style: TextStyle(color: Colors.white)),
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+                ],
               ),
             ),
-            const SizedBox(height: 32),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildStatCard(String title, String value, Color color) {
+  // WIDGET CARD SENSOR (KOTAK WARNA)
+  Widget _buildSensorCard({
+    required String title,
+    required String value,
+    required IconData icon,
+    required Color color,
+    bool isFullWidth = false,
+  }) {
     return Container(
-      padding: const EdgeInsets.all(16.0),
+      width: isFullWidth ? double.infinity : null,
+      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12.0),
+        color: color,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(color: color.withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 4)),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Icon(icon, color: Colors.white, size: 28),
+          const SizedBox(height: 12),
           Text(
             title,
-            style: TextStyle(
-                color: color,
-                fontWeight: FontWeight.bold,
-                fontSize: 12
-            ),
+            style: const TextStyle(color: Colors.white70, fontSize: 13),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 4),
           Text(
             value,
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: color,
-            ),
+            style: const TextStyle(color: Colors.white, fontSize: 22, fontWeight: FontWeight.bold),
           ),
         ],
       ),
+    );
+  }
+
+  // WIDGET ROW STATUS LIST (TITIK WARNA - TEKS - ANGKA)
+  Widget _buildStatusListRow(String label, String value, Color dotColor) {
+    return Row(
+      children: [
+        CircleAvatar(radius: 6, backgroundColor: dotColor),
+        const SizedBox(width: 12),
+        Text(label, style: const TextStyle(fontSize: 14, color: Colors.black87)),
+        const Spacer(),
+        Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black)),
+      ],
     );
   }
 }

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart'; // Tambah Import ini
+import 'package:get/get.dart';
 import 'login.dart';
 import 'main_page.dart';
 import 'services/auth_service.dart';
@@ -13,21 +13,25 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // GANTI MaterialApp JADI GetMaterialApp
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Mina Jaya App',
+      // Cek status login
       home: FutureBuilder<bool>(
         future: AuthService().isLoggedIn(),
         builder: (context, snapshot) {
+          // 1. Tampilan saat Loading
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Scaffold(body: Center(child: CircularProgressIndicator()));
           }
 
+          // 2. Jika Sudah Login -> Buka MainPage (BUKAN HomePage/Dashboard)
           if (snapshot.hasData && snapshot.data == true) {
-            return const MainPage();
-          } else {
-            // Hapus const di sini, karena LoginPage sekarang punya controller injeksi
+            return const MainPage(); // <--- [PERBAIKI DISINI] Jangan 'HomePage()'
+          }
+
+          // 3. Jika Belum Login -> Buka LoginPage
+          else {
             return LoginPage();
           }
         },
