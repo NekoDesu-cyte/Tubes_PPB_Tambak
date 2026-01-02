@@ -113,4 +113,34 @@ class AuthService {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getString('token');
   }
+
+  // Update Profil
+  Future<bool> updateProfile(Map<String, String> data) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('token');
+
+    final url = Uri.parse('$baseUrl/profile'); // Route yang baru kita buat
+
+    try {
+      final response = await http.post(
+        url,
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+          // Tidak perlu Content-Type application/json jika mengirim body map sederhana,
+          // tapi agar aman kita biarkan default form-data handling dari http package
+        },
+        body: data,
+      );
+
+      if (response.statusCode == 200) {
+        return true; // Berhasil update
+      } else {
+        print("Gagal Update: ${response.body}");
+      }
+    } catch (e) {
+      print("Error Update Profile: $e");
+    }
+    return false;
+  }
 }

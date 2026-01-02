@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'login.dart';
 import 'services/auth_service.dart';
+import 'edit_profile_page.dart'; // [PENTING] Import halaman edit
+import 'admin_user_page.dart';   // [PENTING] Import halaman admin
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -22,7 +24,7 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   void initState() {
     super.initState();
-    _loadUserProfile(); // Panggil fungsi ambil data saat halaman dibuka
+    _loadUserProfile();
   }
 
   // Fungsi ambil data dari Service
@@ -34,8 +36,13 @@ class _ProfilePageState extends State<ProfilePage> {
       setState(() {
         name = userData['name'] ?? 'User';
         email = userData['email'] ?? '-';
-        phone = userData['phone'] ?? '-';
-        address = userData['address'] ?? '-';
+
+        // Sesuaikan dengan nama kolom database kamu (phone/no_hp)
+        phone = userData['phone'] ?? userData['no_hp'] ?? '-';
+
+        // Sesuaikan dengan nama kolom database kamu (address/alamat)
+        address = userData['address'] ?? userData['alamat'] ?? '-';
+
         role = userData['role'] ?? 'Anggota';
         userId = userData['id'].toString();
 
@@ -86,7 +93,7 @@ class _ProfilePageState extends State<ProfilePage> {
         Navigator.pop(context);
         Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (context) => const LoginPage()),
+          MaterialPageRoute(builder: (context) => LoginPage()),
               (route) => false,
         );
       }
@@ -103,7 +110,6 @@ class _ProfilePageState extends State<ProfilePage> {
         foregroundColor: Colors.white,
         elevation: 0,
       ),
-      // loading tampilkan putaran, jika selesai tampilkan data
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
@@ -145,12 +151,12 @@ class _ProfilePageState extends State<ProfilePage> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     decoration: BoxDecoration(
-                      color: Colors.green,
+                      color: role == 'admin' ? Colors.orange : Colors.green,
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
                       role.toUpperCase(),
-                      style: const TextStyle(color: Colors.white, fontSize: 12),
+                      style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -190,10 +196,27 @@ class _ProfilePageState extends State<ProfilePage> {
               children: [
                 Expanded(
                   child: ElevatedButton.icon(
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Fitur Edit Profil segera hadir!")),
+                    onPressed: () async {
+                      // 1. Siapkan data saat ini untuk dikirim ke halaman edit
+                      Map<String, dynamic> currentUserData = {
+                        'name': name,
+                        'email': email,
+                        'phone': phone,
+                        'address': address,
+                      };
+
+                      // 2. Buka halaman EditProfilePage
+                      final result = await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => EditProfilePage(userData: currentUserData),
+                        ),
                       );
+
+                      // 3. Jika berhasil edit (result == true), refresh halaman ini
+                      if (result == true) {
+                        _loadUserProfile();
+                      }
                     },
                     icon: const Icon(Icons.edit_outlined, size: 18),
                     label: const Text("Edit Profil"),
@@ -212,7 +235,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   child: ElevatedButton.icon(
                     onPressed: () => _handleLogout(context),
                     icon: const Icon(Icons.logout, size: 18),
-                    label: const Text("Logout / Keluar"),
+                    label: const Text("Keluar"),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
                       foregroundColor: Colors.red,
@@ -225,6 +248,34 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
               ],
             ),
+
+            // [BARU] Tombol Khusus Admin
+            // Hanya muncul jika role user adalah 'admin'
+            if (role == 'admin')
+              Padding(
+                padding: const EdgeInsets.only(top: 16.0),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const AdminUserPage())
+                      );
+                    },
+                    icon: const Icon(Icons.admin_panel_settings),
+                    label: const Text("Halaman Admin (Kelola User)"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.orange[800],
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
+                  ),
+                ),
+              ),
+
+            const SizedBox(height: 32),
           ],
         ),
       ),

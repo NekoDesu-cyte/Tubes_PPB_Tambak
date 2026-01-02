@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart'; // Tambah Import ini
 import 'login.dart';
 import 'main_page.dart';
 import 'services/auth_service.dart';
@@ -12,21 +13,22 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    // GANTI MaterialApp JADI GetMaterialApp
+    return GetMaterialApp(
       debugShowCheckedModeBanner: false,
+      title: 'Mina Jaya App',
       home: FutureBuilder<bool>(
         future: AuthService().isLoggedIn(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Scaffold(
-              body: Center(child: CircularProgressIndicator()),
-            );
+            return const Scaffold(body: Center(child: CircularProgressIndicator()));
           }
 
           if (snapshot.hasData && snapshot.data == true) {
             return const MainPage();
           } else {
-            return const LoginPage();
+            // Hapus const di sini, karena LoginPage sekarang punya controller injeksi
+            return LoginPage();
           }
         },
       ),
