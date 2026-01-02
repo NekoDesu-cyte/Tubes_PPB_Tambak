@@ -3,7 +3,9 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthService {
-  // GANTI IP seusai kebutuhanmu gaes:
+  // GANTI IP seusai konfigurasi komputer/emulator Anda:
+  // Emulator Android: 10.0.2.2
+  // HP Fisik (Debugging USB): Gunakan IP Laptop (misal 192.168.1.x)
   final String baseUrl = 'http://10.0.2.2:8000/api';
 
   // 1. Login
@@ -28,7 +30,7 @@ class AuthService {
         if (data['success'] == true) {
           String token = data['token'];
 
-          // Simpan token ke HP
+          // Simpan token ke memori HP
           SharedPreferences prefs = await SharedPreferences.getInstance();
           await prefs.setString('token', token);
 
@@ -60,14 +62,14 @@ class AuthService {
         },
       );
 
-      // --- BAGIAN INI SAYA TAMBAHKAN UNTUK CEK ISI DATA ---
-      print("=== CEK DATA USER DARI SERVER ===");
-      print(response.body); // Ini akan mencetak semua data mentah
-      print("===================================");
-      // ----------------------------------------------------
+      // Debugging: Cek data mentah dari server
+      // print("=== DATA USER ===");
+      // print(response.body);
 
       if (response.statusCode == 200) {
         final dynamic jsonResponse = jsonDecode(response.body);
+
+        // Laravel biasanya membungkus data dalam key 'data'
         if (jsonResponse is Map<String, dynamic> && jsonResponse.containsKey('data')) {
           return jsonResponse['data'];
         }
@@ -79,13 +81,13 @@ class AuthService {
     return null;
   }
 
-  // 3. Cek Status Login (INI YANG TADI HILANG)
+  // 3. Cek Status Login (Apakah token ada?)
   Future<bool> isLoggedIn() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.containsKey('token');
   }
 
-  // 4. Fungsi log out cuyy
+  // 4. Logout
   Future<void> logout() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('token');
@@ -101,42 +103,46 @@ class AuthService {
         },
       );
     } catch (e) {
-      // Abaikan error koneksi
+      // Abaikan error jika koneksi putus saat logout, tetap hapus token lokal
+      print("Logout Error (Ignored): $e");
     }
 
-    // Hapus token dari memori HP
+    // Hapus token dari memori HP agar user keluar
     await prefs.remove('token');
   }
 
-  // 5. Ambil token (Opsional)
+  // 5. Ambil token (Opsional, jika butuh di controller lain)
   Future<String?> getToken() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getString('token');
   }
 
-  // Update Profil
+  // 6. Update Profil (Fitur Baru)
   Future<bool> updateProfile(Map<String, String> data) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? token = prefs.getString('token');
 
-    final url = Uri.parse('$baseUrl/profile'); // Route yang baru kita buat
+    final url = Uri.parse('$baseUrl/profile');
 
     try {
       final response = await http.post(
         url,
         headers: {
-          'Accept': 'application/json',
+          'Accept': 'application/json', // Wajib agar Laravel membalas JSON
           'Authorization': 'Bearer $token',
-          // Tidak perlu Content-Type application/json jika mengirim body map sederhana,
-          // tapi agar aman kita biarkan default form-data handling dari http package
         },
         body: data,
       );
 
+      // Debugging Response
+      print("Update Profile Status: ${response.statusCode}");
+      print("Update Profile Body: ${response.body}");
+
       if (response.statusCode == 200) {
-        return true; // Berhasil update
+        return true; // Berhasil
       } else {
-        print("Gagal Update: ${response.body}");
+        // Jika validasi gagal (misal email kembar)
+        print("Gagal Update Profil: ${response.body}");
       }
     } catch (e) {
       print("Error Update Profile: $e");
