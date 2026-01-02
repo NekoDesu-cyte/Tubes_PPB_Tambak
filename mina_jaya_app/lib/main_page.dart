@@ -3,7 +3,6 @@ import 'package:mina_jaya_app/services/auth_service.dart';
 import 'dashboard.dart';
 import 'keuangan.dart';
 import 'statistik.dart';
-import 'panen.dart';
 import 'notification.dart';
 import 'profile_page.dart'; // Pastikan file ini sudah ada
 
@@ -21,7 +20,6 @@ class _MainPageState extends State<MainPage> {
 
   final List<Widget> _widgetOptions = <Widget>[
     const HomePage(),      // Pastikan dashboard.dart tidak punya AppBar lagi agar tidak double
-    const PanenPage(),
     const StatistikPage(),
     const KeuanganPage(),
   ];
@@ -132,10 +130,6 @@ class _MainPageState extends State<MainPage> {
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
             label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.set_meal_outlined),
-            label: 'Panen',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.query_stats),

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'detail_sensor.dart';
 import 'services/dashboard_service.dart';
 
 class HomePage extends StatefulWidget {
@@ -13,7 +12,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   bool _isLoading = true;
 
-  // Data Dummy untuk inisialisasi (akan ditimpa API)
+  // Data Dummy
   Map<String, dynamic> _sensorData = {
     'suhu': 0,
     'ph': 0,
@@ -21,8 +20,8 @@ class _HomePageState extends State<HomePage> {
   };
   List<dynamic> _pieChartData = [];
 
-  // Hitungan Sensor
-  int _totalSensor = 3; // Suhu, pH, Oksigen (Pakan dihapus)
+  // Hitungan Sensor (Manual 12 sesuai request)
+  int _totalSensor = 12;
   int _sensorAktif = 0;
   int _sensorMati = 0;
 
@@ -48,11 +47,15 @@ class _HomePageState extends State<HomePage> {
     if (data != null) {
       var sensors = data['sensor'];
 
-      // Hitung Sensor Aktif (Cek Suhu, pH, Oksigen)
+      // Logika Hitung Sensor Aktif Sederhana
       int aktif = 0;
-      if (sensors['suhu'] != 0 && sensors['suhu'] != '0') aktif++;
-      if (sensors['ph'] != 0 && sensors['ph'] != '0') aktif++;
-      if (sensors['oksigen'] != 0 && sensors['oksigen'] != '0') aktif++;
+      bool isDataValid = (sensors['suhu'] != 0) || (sensors['ph'] != 0) || (sensors['oksigen'] != 0);
+
+      if (isDataValid) {
+        aktif = _totalSensor;
+      } else {
+        aktif = 0;
+      }
 
       setState(() {
         _sensorData = data['sensor'];
@@ -68,7 +71,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    // Hitung Total Ikan
+    // Hitung Total Ikan untuk Persentase
     int totalSemuaIkan = 0;
     for (var item in _pieChartData) {
       totalSemuaIkan += int.parse(item['total'].toString());
@@ -82,17 +85,17 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            //  Header Image
+            // 1. Header Image
             Stack(
               children: [
                 Image.asset(
                   'assets/tambak_page.jpeg',
                   width: double.infinity,
-                  height: 200,
+                  height: 220,
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) {
                     return Container(
-                      height: 200,
+                      height: 220,
                       color: Colors.grey[300],
                       child: const Center(
                         child: Text('Gagal memuat gambar'),
@@ -100,7 +103,7 @@ class _HomePageState extends State<HomePage> {
                     );
                   },
                 ),
-                // Overlay Gradient (Opsional biar teks AppBar terbaca)
+                // Overlay Gradient
                 Container(
                   height: 220,
                   decoration: BoxDecoration(
@@ -133,8 +136,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                   const SizedBox(height: 16),
 
-                  // 2. KARTU SENSOR (SUHU, PH, OKSIGEN)
-                  // Menggunakan Row & Expanded agar ukuran menyesuaikan
+                  // 2. KARTU SENSOR (SUHU, PH)
                   Row(
                     children: [
                       Expanded(
@@ -157,8 +159,8 @@ class _HomePageState extends State<HomePage> {
                     ],
                   ),
                   const SizedBox(height: 12),
-                  // Oksigen taruh bawahnya (Full width atau row lagi)
-                  // Biar rapi, Oksigen kita taruh sendiri tapi style sama
+
+                  // Oksigen (Full Width)
                   _buildSensorCard(
                     title: "Oksigen (DO)",
                     value: "${_sensorData['oksigen']} mg/L",
@@ -197,7 +199,7 @@ class _HomePageState extends State<HomePage> {
                                 child: PieChart(
                                   PieChartData(
                                     sectionsSpace: 0,
-                                    centerSpaceRadius: 35, // Bolong tengah (Donut)
+                                    centerSpaceRadius: 35,
                                     sections: List.generate(_pieChartData.length, (index) {
                                       final ikan = _pieChartData[index];
                                       final jumlah = int.parse(ikan['total'].toString());
@@ -205,7 +207,7 @@ class _HomePageState extends State<HomePage> {
                                       return PieChartSectionData(
                                         color: color,
                                         value: jumlah.toDouble(),
-                                        title: '', // Hapus judul di chart
+                                        title: '',
                                         radius: 25,
                                       );
                                     }),
@@ -278,23 +280,7 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
 
-                  const SizedBox(height: 20),
-
-                  // Tombol Detail (Opsional)
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(context, MaterialPageRoute(builder: (context) => const DetailSensorPage()));
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blue[700],
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      ),
-                      child: const Text("Lihat Detail Sensor", style: TextStyle(color: Colors.white)),
-                    ),
-                  ),
-                  const SizedBox(height: 30),
+                  const SizedBox(height: 30), // Spasi Bawah
                 ],
               ),
             ),
@@ -304,7 +290,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // WIDGET CARD SENSOR (KOTAK WARNA)
+  // WIDGET CARD SENSOR
   Widget _buildSensorCard({
     required String title,
     required String value,
@@ -341,7 +327,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // WIDGET ROW STATUS LIST (TITIK WARNA - TEKS - ANGKA)
+  // WIDGET STATUS LIST
   Widget _buildStatusListRow(String label, String value, Color dotColor) {
     return Row(
       children: [
