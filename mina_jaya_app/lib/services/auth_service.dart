@@ -15,13 +15,8 @@ class AuthService {
     try {
       final response = await http.post(
         url,
-        headers: {
-          'Accept': 'application/json',
-        },
-        body: {
-          'email': email,
-          'password': password,
-        },
+        headers: {'Accept': 'application/json'},
+        body: {'email': email, 'password': password},
       );
 
       if (response.statusCode == 200) {
@@ -40,7 +35,6 @@ class AuthService {
 
       print('Gagal Login: ${response.body}');
       return false;
-
     } catch (e) {
       print('Error Koneksi Login: $e');
       return false;
@@ -70,7 +64,8 @@ class AuthService {
         final dynamic jsonResponse = jsonDecode(response.body);
 
         // Laravel biasanya membungkus data dalam key 'data'
-        if (jsonResponse is Map<String, dynamic> && jsonResponse.containsKey('data')) {
+        if (jsonResponse is Map<String, dynamic> &&
+            jsonResponse.containsKey('data')) {
           return jsonResponse['data'];
         }
         return jsonResponse;

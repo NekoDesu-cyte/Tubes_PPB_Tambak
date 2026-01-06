@@ -4,7 +4,7 @@ import 'dashboard.dart';
 import 'keuangan.dart';
 import 'statistik.dart';
 import 'notification.dart';
-import 'profile_page.dart'; // Pastikan file ini sudah ada
+import 'profile_page.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -17,37 +17,66 @@ class _MainPageState extends State<MainPage> {
   int _selectedIndex = 0;
 
   String userName = 'Pengguna';
-
-  final List<Widget> _widgetOptions = <Widget>[
-    const HomePage(),      // Pastikan dashboard.dart tidak punya AppBar lagi agar tidak double
-    const StatistikPage(),
-    const KeuanganPage(),
-  ];
+  String userRole = 'user';
 
   @override
   void initState() {
     super.initState();
-    _loadUserName();
+    _loadUser();
   }
 
-  void _loadUserName() async {
+  void _loadUser() async {
     final authService = AuthService();
     final userData = await authService.getUserProfile();
 
     if (userData != null) {
       setState(() {
         userName = userData['name'] ?? 'Pengguna';
+        userRole = userData['role'] ?? 'user';
+        _selectedIndex = 0; // reset aman
       });
     }
   }
 
+  /// =========================
+  /// NAVIGATION CONFIG (SINGLE SOURCE OF TRUTH)
+  /// =========================
+  List<_NavItem> get _navItems {
+    if (userRole == 'admin') {
+      return [
+        _NavItem(label: 'Home', icon: Icons.home, page: const HomePage()),
+        _NavItem(
+          label: 'Statistik',
+          icon: Icons.query_stats,
+          page: const StatistikPage(),
+        ),
+        _NavItem(
+          label: 'Keuangan',
+          icon: Icons.account_balance_wallet_outlined,
+          page: const KeuanganPage(),
+        ),
+      ];
+    }
+
+    // USER BIASA (TANPA KEUANGAN)
+    return [
+      _NavItem(label: 'Home', icon: Icons.home, page: const HomePage()),
+      _NavItem(
+        label: 'Statistik',
+        icon: Icons.query_stats,
+        page: const StatistikPage(),
+      ),
+    ];
+  }
+
   void _onItemTapped(int index) {
+    if (index >= _navItems.length) return;
+
     setState(() {
       _selectedIndex = index;
     });
   }
 
-  // Widget helper untuk membuat tombol bulat biru
   Widget _buildTopIcon(IconData icon, {VoidCallback? onPressed}) {
     return GestureDetector(
       onTap: onPressed,
@@ -56,11 +85,7 @@ class _MainPageState extends State<MainPage> {
         child: CircleAvatar(
           radius: 20,
           backgroundColor: Colors.blue[700],
-          child: Icon(
-            icon,
-            color: Colors.white,
-            size: 20,
-          ),
+          child: Icon(icon, color: Colors.white, size: 20),
         ),
       ),
     );
@@ -68,15 +93,16 @@ class _MainPageState extends State<MainPage> {
 
   @override
   Widget build(BuildContext context) {
+    final navItems = _navItems;
+
     return Scaffold(
-      // Agar background konten (gambar tambak) bisa naik ke belakang AppBar
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        backgroundColor: Colors.transparent, // Transparan agar menyatu dengan gambar di halaman anak
+        backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text(
           'Selamat Datang, $userName',
-          style: TextStyle(
+          style: const TextStyle(
             color: Colors.white,
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -89,9 +115,7 @@ class _MainPageState extends State<MainPage> {
             ],
           ),
         ),
-        titleSpacing: 16.0,
         actions: [
-          // 1. Tombol Notifikasi (Lonceng)
           _buildTopIcon(
             Icons.notifications_none,
             onPressed: () {
@@ -103,43 +127,32 @@ class _MainPageState extends State<MainPage> {
               );
             },
           ),
-
-          // 2. [BARU] Tombol Profil
           _buildTopIcon(
-            Icons.person, // Ikon orang/profil
+            Icons.person,
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => const ProfilePage(),
-                ),
+                MaterialPageRoute(builder: (context) => const ProfilePage()),
               );
             },
           ),
-
-          const SizedBox(width: 16), // Jarak di sebelah kanan
+          const SizedBox(width: 16),
         ],
       ),
-      body: Center(
-        // Menampilkan halaman sesuai tab yang dipilih
-        child: _widgetOptions.elementAt(_selectedIndex),
-      ),
 
+      /// BODY
+      body: navItems.isEmpty ? const SizedBox() : navItems[_selectedIndex].page,
+
+      /// BOTTOM NAVBAR
       bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.query_stats),
-            label: 'Statistik',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.account_balance_wallet_outlined),
-            label: 'Keuangan',
-          ),
-        ],
+        items: navItems
+            .map(
+              (item) => BottomNavigationBarItem(
+                icon: Icon(item.icon),
+                label: item.label,
+              ),
+            )
+            .toList(),
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
         backgroundColor: const Color.fromRGBO(56, 137, 213, 1),
@@ -148,8 +161,19 @@ class _MainPageState extends State<MainPage> {
         type: BottomNavigationBarType.fixed,
         showUnselectedLabels: true,
         showSelectedLabels: true,
-        elevation: 8.0,
+        elevation: 8,
       ),
     );
   }
+}
+
+/// =========================
+/// HELPER CLASS
+/// =========================
+class _NavItem {
+  final String label;
+  final IconData icon;
+  final Widget page;
+
+  _NavItem({required this.label, required this.icon, required this.page});
 }

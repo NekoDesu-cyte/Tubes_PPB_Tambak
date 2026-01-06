@@ -4,7 +4,6 @@ import 'controllers/login_controller.dart'; // Import Controller yang baru dibua
 
 // UBAH JADI STATELESS WIDGET (Karena state sudah diurus Controller)
 class LoginPage extends StatelessWidget {
-
   // Suntikkan (Inject) Controller ke halaman ini
   final LoginController controller = Get.put(LoginController());
 
@@ -28,7 +27,7 @@ class LoginPage extends StatelessWidget {
                 height: 80,
                 fit: BoxFit.contain,
                 errorBuilder: (context, error, stackTrace) =>
-                const Icon(Icons.image, size: 80, color: Colors.grey),
+                    const Icon(Icons.image, size: 80, color: Colors.grey),
               ),
               const SizedBox(height: 16),
               const Text(
@@ -39,15 +38,19 @@ class LoginPage extends StatelessWidget {
 
               const Align(
                 alignment: Alignment.centerLeft,
-                child: Text('Login', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                child: Text(
+                  'Login',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
               ),
               const SizedBox(height: 16),
 
               // INPUT EMAIL
               TextField(
-                controller: controller.emailController, // Pakai punya Controller
+                controller:
+                    controller.emailController, // Pakai punya Controller
                 decoration: InputDecoration(
-                  labelText: 'Email / Username',
+                  labelText: 'Email',
                   filled: true,
                   fillColor: Colors.grey[100],
                   border: OutlineInputBorder(
@@ -60,7 +63,8 @@ class LoginPage extends StatelessWidget {
 
               // INPUT PASSWORD
               TextField(
-                controller: controller.passwordController, // Pakai punya Controller
+                controller:
+                    controller.passwordController, // Pakai punya Controller
                 obscureText: true,
                 decoration: InputDecoration(
                   labelText: 'Password',
@@ -76,28 +80,41 @@ class LoginPage extends StatelessWidget {
 
               // TOMBOL LOGIN (Dengan Obx)
               // Obx berguna agar tombol ini bereaksi saat isLoading berubah
-              Obx(() => SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: controller.isLoading.value
-                      ? null // Jika loading, tombol mati
-                      : () => controller.login(), // Panggil fungsi di controller
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue[700],
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+              Obx(
+                () => SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: controller.isLoading.value
+                        ? null // Jika loading, tombol mati
+                        : () => controller
+                              .login(), // Panggil fungsi di controller
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue[700],
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
+                    child: controller.isLoading.value
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
+                              strokeWidth: 2,
+                            ),
+                          )
+                        : const Text(
+                            'Masuk',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                   ),
-                  child: controller.isLoading.value
-                      ? const SizedBox(
-                      height: 20, width: 20,
-                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
-                  )
-                      : const Text('Masuk', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 ),
-              )),
+              ),
             ],
           ),
         ),
